@@ -1,5 +1,10 @@
-apply plugin: 'java'
-
-dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+publishing {
+    publications {
+        APIPublication(MavenPublication) {
+            from components.java
+            groupId GROUP
+            artifactId 'Robobinding-helpers-api'
+            version VERSION
+        }
+    }
 }

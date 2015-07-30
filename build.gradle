@@ -1,5 +1,125 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2'
+    }
+}
+apply plugin: 'com.jfrog.bintray'
+
+import java.text.SimpleDateFormat
+
+def globalVersion = new Version(VERSION)
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+allprojects {
+
+    repositories {
+        jcenter()
+    }
+    apply plugin: 'idea'
+    apply plugin: 'com.jfrog.bintray'
+    apply plugin: 'maven-publish'
+    apply plugin: 'java'
+    configure(subprojects.findAll { new File(it.projectDir, 'src').directory }) {
+        apply plugin: 'java'
+    }
+    group = 'com.dellkan'
+    version = globalVersion
+    status = version.status
+
+    ext.publish = true
+
+    bintray {
+        user = properties.getProperty("bintray.user")
+        key = properties.getProperty("bintray.apikey")
+        configurations = ['published', 'archives']
+        publish = project.publish
+        pkg {
+            repo = 'maven'
+            name = 'Robobinding-helpers'
+            websiteUrl = SITEURL
+            issueTrackerUrl = ISSUESURL
+            vcsUrl = GITURL
+            licenses = ['Apache-2.0']
+            labels = ['android', 'robobinding', 'annotations', 'validation']
+            attributes= ['plat': ['linux', 'osx', 'windows']]
+            publicDownloadNumbers = false
+            version {
+                name = VERSION_NAME //Optional logical version name
+                desc = 'Initial'
+                vcsTag = VERSION
+            }
+        }
+    }
+}
+
+subprojects {
+    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
+
+    if (project.plugins.hasPlugin('java')) {
+        // manifest.mainAttributes(provider: 'gradle')
+        configurations {
+            published
+        }
+
+        task sourceJar(type: Jar) {
+            from sourceSets.main.allSource
+            classifier = 'sources'
+        }
+
+        task javadocJar(type: Jar, dependsOn: javadoc) {
+            classifier = 'javadoc'
+            from javadoc.destinationDir
+        }
+
+        // Add the sourceJars to non-extractor modules
+        artifacts {
+            published sourceJar
+            published javadocJar
+        }
+    }
+}
+
+configurations {
+    published
+}
+
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.12'
-    description = 'Produces Gradle Wrapper for the project.'
-    group = 'other'
+    gradleVersion = '2.0'
+}
+
+class Version {
+    String originalVersion
+    String thisVersion
+    String status
+    Date buildTime
+
+    Version(String versionValue) {
+        buildTime = new Date()
+        originalVersion = versionValue
+        if (originalVersion.endsWith('-SNAPSHOT')) {
+            status = 'integration'
+            thisVersion = originalVersion.substring(0, originalVersion.length() - 'SNAPSHOT'.length()) + getTimestamp()
+        } else {
+            status = 'release'
+            thisVersion = versionValue
+        }
+    }
+
+    String getTimestamp() {
+        // Convert local file timestamp to UTC
+        def format = new SimpleDateFormat('yyyyMMddHHmmss')
+        format.setCalendar(Calendar.getInstance(TimeZone.getTimeZone('UTC')));
+        return format.format(buildTime)
+    }
+
+    String toString() {
+        thisVersion
+    }
 }
