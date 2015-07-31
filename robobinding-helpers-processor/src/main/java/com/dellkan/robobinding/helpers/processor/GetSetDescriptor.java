@@ -2,6 +2,7 @@ package com.dellkan.robobinding.helpers.processor;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Types;
 
 public class GetSetDescriptor {
     private boolean isSetter;
@@ -35,10 +36,15 @@ public class GetSetDescriptor {
     }
 
     public boolean isNumeric() {
-        return
-                element.asType().getKind().equals(TypeKind.INT) ||
-                element.asType().getKind().equals(TypeKind.FLOAT) ||
-                element.asType().getKind().equals(TypeKind.DOUBLE) ||
-                element.asType().getKind().equals(TypeKind.LONG);
+        String type = Util.typeToString(element.asType());
+        switch (type) {
+            case "java.lang.Integer":
+            case "java.lang.Float":
+            case "java.lang.Double":
+            case "java.lang.Long":
+                return true;
+            default:
+                return false;
+        }
     }
 }

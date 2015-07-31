@@ -46,6 +46,7 @@
         }
     }
 
+    <#list validators>@DependsOnStateOf({<#items as item>"${item.name}"<#sep>, </#items>})</#list>
     public boolean isValid() {
         return <#list validators as item>is${item.name?cap_first}Valid()<#sep> &&
             <#else>true</#list>;

@@ -11,7 +11,7 @@
     public void set${item.name?cap_first}(<#if item.boolean>boolean value<#else>String value</#if>) {
         <#if item.numeric>
         try {
-            this.data.${item.name} = <#if item.type == "int">Integer<#else>${item.type?cap_first}</#if>.valueOf(value);
+            this.data.${item.name} = ${item.type}.valueOf(value);
         } catch (NumberFormatException e) {
 
         }
