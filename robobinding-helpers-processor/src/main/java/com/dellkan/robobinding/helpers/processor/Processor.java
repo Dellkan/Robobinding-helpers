@@ -3,7 +3,7 @@ package com.dellkan.robobinding.helpers.processor;
 import com.dellkan.robobinding.helpers.modelgen.Get;
 import com.dellkan.robobinding.helpers.modelgen.GetSet;
 import com.dellkan.robobinding.helpers.modelgen.PresentationModel;
-import com.dellkan.robobinding.helpers.validation.ValidateLength;
+import com.dellkan.robobinding.helpers.validation.ValidateType;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -21,11 +21,14 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.MirroredTypeException;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
@@ -34,7 +37,7 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
-@SupportedAnnotationTypes({"com.dellkan.robobinding.helpers.modelgen.PresentationModel"})
+@SupportedAnnotationTypes({"com.dellkan.robobinding.helpers.modelgen.PresentationModel", "com.dellkan.robobinding.helpers.validation.ValidationType"})
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class Processor extends AbstractProcessor {
     private Messager messager;
@@ -54,14 +57,27 @@ public class Processor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        for (Element element : roundEnv.getElementsAnnotatedWith(PresentationModel.class)) {
-            messager.printMessage(Diagnostic.Kind.NOTE, "Found element", element);
+        Map<String, TypeElement> customValidators = new HashMap<>();
+        for (Element element : roundEnv.getElementsAnnotatedWith(ValidateType.class)) {
+            if (element.getKind().isClass()) {
+                ValidateType annotation = element.getAnnotation(ValidateType.class);
+                String annotationClass = "";
+                try {
+                     annotationClass = annotation.value().getCanonicalName();
+                } catch (MirroredTypeException e) {
+                    annotationClass = Util.typeToString(e.getTypeMirror());
+                }
 
+                customValidators.put(annotationClass, (TypeElement) element);
+                messager.printMessage(Diagnostic.Kind.NOTE, "Validatorprocessor[" + annotationClass + "] added", element);
+            }
+        }
+        for (Element element : roundEnv.getElementsAnnotatedWith(PresentationModel.class)) {
             Map<String, Object> input = new HashMap<>();
 
             List<MethodDescriptor> methods = new ArrayList<>();
             List<GetSetDescriptor> accessors = new ArrayList<>();
-            List<LengthValidateDescriptor> validators = new ArrayList<>();
+            List<ValidateDescriptor> validators = new ArrayList<>();
 
             for (Element child : element.getEnclosedElements()) {
                 // Create list of existing methods
@@ -84,9 +100,14 @@ public class Processor extends AbstractProcessor {
                     }
 
                     // Validation
-                    if ((childAnnotation = child.getAnnotation(ValidateLength.class)) != null) {
-                        ValidateLength validateLength = (ValidateLength) childAnnotation;
-                        validators.add(new LengthValidateDescriptor(validateLength, child));
+                    for (Map.Entry<String, TypeElement> markerAnnotation : customValidators.entrySet()) {
+                        for (AnnotationMirror mirror : child.getAnnotationMirrors()) {
+                            if (Util.typeToString(mirror.getAnnotationType()).equals(markerAnnotation.getKey())) {
+                                messager.printMessage(Diagnostic.Kind.NOTE, "Field with annotation " + markerAnnotation.getKey() + " found", child);
+                                validators.add(new ValidateDescriptor(markerAnnotation.getKey(), markerAnnotation.getValue(), (VariableElement) child));
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -105,7 +126,7 @@ public class Processor extends AbstractProcessor {
 
                 // Fill in variables
                 input.put("className", element.getSimpleName());
-                input.put("packagePath", Util.getPackage(element).toString());
+                input.put("package", Util.getPackage(element));
 
                 // Process template
                 template.process(input, out);

@@ -1,4 +1,4 @@
-package ${packagePath};
+package ${package};
 
 import org.robobinding.annotation.DependsOnStateOf;
 import org.robobinding.annotation.PresentationModel;
@@ -6,6 +6,9 @@ import org.robobinding.presentationmodel.HasPresentationModelChangeSupport;
 import org.robobinding.presentationmodel.PresentationModelChangeSupport;
 
 import com.dellkan.robobinding.helpers.model.IHasPresentationModel;
+import com.dellkan.robobinding.helpers.validation.ValidationProcessor;
+
+import java.lang.annotation.Annotation;
 
 @PresentationModel
 public class ${className}$$Helper implements HasPresentationModelChangeSupport, IHasPresentationModel {

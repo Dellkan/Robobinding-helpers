@@ -1,10 +1,8 @@
-publishing {
-    publications {
-        APIPublication(MavenPublication) {
-            from components.java
-            groupId GROUP
-            artifactId 'Robobinding-helpers-api'
-            version VERSION
-        }
-    }
+apply plugin: 'java'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
 }

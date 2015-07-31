@@ -1,3 +1,4 @@
+
     public <#if item.boolean>boolean is<#else>String get</#if>${item.name?cap_first}() {
         <#if item.numeric>
         return "" + this.data.${item.name};
