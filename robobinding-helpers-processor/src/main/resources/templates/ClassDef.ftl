@@ -1,4 +1,4 @@
-{package};
+package ${packagePath};
 
 import org.robobinding.annotation.DependsOnStateOf;
 import org.robobinding.annotation.PresentationModel;

@@ -105,7 +105,7 @@ public class Processor extends AbstractProcessor {
 
                 // Fill in variables
                 input.put("className", element.getSimpleName());
-                input.put("package", Util.getPackage(element));
+                input.put("packagePath", Util.getPackage(element).toString());
 
                 // Process template
                 template.process(input, out);
