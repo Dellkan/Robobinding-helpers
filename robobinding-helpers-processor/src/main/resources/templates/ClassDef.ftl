@@ -1,5 +1,3 @@
-package templates
-
 {package};
 
 import org.robobinding.annotation.DependsOnStateOf;

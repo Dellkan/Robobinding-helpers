@@ -1,5 +1,3 @@
-package templates;
-
 <#list validators as item>
 
     @DependsOnStateOf({"${item.name}"})
