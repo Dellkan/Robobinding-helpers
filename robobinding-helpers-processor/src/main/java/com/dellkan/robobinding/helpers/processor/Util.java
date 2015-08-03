@@ -16,6 +16,9 @@
  */
 package com.dellkan.robobinding.helpers.processor;
 
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.TypeName;
+
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -85,7 +88,8 @@ final class Util {
     public static void typeToString(final TypeMirror type, final StringBuilder result,
                                     final char innerClassSeparator) {
         type.accept(new SimpleTypeVisitor6<Void, Void>() {
-            @Override public Void visitDeclared(DeclaredType declaredType, Void v) {
+            @Override
+            public Void visitDeclared(DeclaredType declaredType, Void v) {
                 TypeElement typeElement = (TypeElement) declaredType.asElement();
                 rawTypeToString(result, typeElement, innerClassSeparator);
                 List<? extends TypeMirror> typeArguments = declaredType.getTypeArguments();
@@ -101,11 +105,15 @@ final class Util {
                 }
                 return null;
             }
-            @Override public Void visitPrimitive(PrimitiveType primitiveType, Void v) {
-                result.append(primitiveToString((PrimitiveType) type));
+
+            @Override
+            public Void visitPrimitive(PrimitiveType primitiveType, Void v) {
+                result.append(box((PrimitiveType) type));
                 return null;
             }
-            @Override public Void visitArray(ArrayType arrayType, Void v) {
+
+            @Override
+            public Void visitArray(ArrayType arrayType, Void v) {
                 TypeMirror type = arrayType.getComponentType();
                 if (type instanceof PrimitiveType) {
                     result.append(type.toString()); // Don't box, since this is an array.
@@ -115,11 +123,15 @@ final class Util {
                 result.append("[]");
                 return null;
             }
-            @Override public Void visitTypeVariable(TypeVariable typeVariable, Void v) {
+
+            @Override
+            public Void visitTypeVariable(TypeVariable typeVariable, Void v) {
                 result.append(typeVariable.asElement().getSimpleName());
                 return null;
             }
-            @Override public Void visitError(ErrorType errorType, Void v) {
+
+            @Override
+            public Void visitError(ErrorType errorType, Void v) {
                 // Error type found, a type may not yet have been generated, but we need the type
                 // so we can generate the correct code in anticipation of the type being available
                 // to the compiler.
@@ -133,9 +145,38 @@ final class Util {
                 result.append(errorType.toString());
                 return null;
             }
-            @Override protected Void defaultAction(TypeMirror typeMirror, Void v) {
+
+            @Override
+            protected Void defaultAction(TypeMirror typeMirror, Void v) {
                 throw new UnsupportedOperationException(
-                        "Unexpected TypeKind " + typeMirror.getKind() + " for "  + typeMirror);
+                        "Unexpected TypeKind " + typeMirror.getKind() + " for " + typeMirror);
+            }
+        }, null);
+    }
+
+    /** Returns a string for {@code type}. Primitive types are always boxed. */
+    public static TypeName injectableType(TypeMirror type) {
+        return type.accept(new SimpleTypeVisitor6<TypeName, Void>() {
+            @Override public TypeName visitPrimitive(PrimitiveType primitiveType, Void v) {
+                return box(primitiveType);
+            }
+
+            @Override public TypeName visitError(ErrorType errorType, Void v) {
+                // Error type found, a type may not yet have been generated, but we need the type
+                // so we can generate the correct code in anticipation of the type being available
+                // to the compiler.
+
+                // Paramterized types which don't exist are returned as an error type whose name is "<any>"
+                if ("<any>".equals(errorType.toString())) {
+                    throw new CodeGenerationIncompleteException(
+                            "Type reported as <any> is likely a not-yet generated parameterized type.");
+                }
+
+                return ClassName.bestGuess(errorType.toString());
+            }
+
+            @Override protected TypeName defaultAction(TypeMirror typeMirror, Void v) {
+                return TypeName.get(typeMirror);
             }
         }, null);
     }
@@ -249,26 +290,26 @@ final class Util {
         }
     }
 
-    private static String primitiveToString(PrimitiveType primitiveType) {
+    private static TypeName box(PrimitiveType primitiveType) {
         switch (primitiveType.getKind()) {
             case BYTE:
-                return "byte";
+                return ClassName.get(Byte.class);
             case SHORT:
-                return "short";
+                return ClassName.get(Short.class);
             case INT:
-                return "int";
+                return ClassName.get(Integer.class);
             case LONG:
-                return "long";
+                return ClassName.get(Long.class);
             case FLOAT:
-                return "float";
+                return ClassName.get(Float.class);
             case DOUBLE:
-                return "double";
+                return ClassName.get(Double.class);
             case BOOLEAN:
-                return "boolean";
+                return ClassName.get(Boolean.class);
             case CHAR:
-                return "char";
+                return ClassName.get(Character.class);
             case VOID:
-                return "void";
+                return ClassName.get(Void.class);
             default:
                 throw new AssertionError();
         }

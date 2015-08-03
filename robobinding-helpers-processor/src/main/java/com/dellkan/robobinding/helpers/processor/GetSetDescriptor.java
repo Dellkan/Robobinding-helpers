@@ -5,18 +5,25 @@ import javax.lang.model.type.TypeKind;
 
 /**
  * Used by freemarker, during compile-time annotation processing.
- * Describes attributes marked with {@link com.dellkan.robobinding.helpers.modelgen.Get Get} and
+ * Describes attributes marked with {@link com.dellkan.robobinding.helpers.modelgen.Get Get},
+ * {@link com.dellkan.robobinding.helpers.modelgen.Set Set} and
  * {@link com.dellkan.robobinding.helpers.modelgen.GetSet GetSet}
  */
 public class GetSetDescriptor {
+    private boolean isGetter;
     private boolean isSetter;
     private Element element;
     private String[] dependsOn;
 
-    public GetSetDescriptor(boolean isSetter, Element element, String[] dependsOn) {
+    public GetSetDescriptor(boolean isGetter, boolean isSetter, Element element, String[] dependsOn) {
+        this.isGetter = isGetter;
         this.isSetter = isSetter;
         this.element = element;
         this.dependsOn = dependsOn;
+    }
+
+    public boolean isGetter() {
+        return this.isGetter;
     }
 
     public boolean isSetter() {

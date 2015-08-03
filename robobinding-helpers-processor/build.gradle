@@ -11,4 +11,5 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile project(":robobinding-helpers-api")
     compile 'org.freemarker:freemarker:2.3.23'
+    compile 'com.squareup:javapoet:1.2.0'
 }

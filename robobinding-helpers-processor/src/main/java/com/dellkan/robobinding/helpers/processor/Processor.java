@@ -96,11 +96,13 @@ public class Processor extends AbstractProcessor {
                 else if (child.getKind() == ElementKind.FIELD) {
                     Annotation childAnnotation;
                     if ((childAnnotation = child.getAnnotation(Get.class)) != null) {
-                        accessors.add(new GetSetDescriptor(false, child, null));
-                    }
-                    if ((childAnnotation = child.getAnnotation(GetSet.class)) != null) {
+                        accessors.add(new GetSetDescriptor(true, false, child, null));
+                    } else if ((childAnnotation = child.getAnnotation(GetSet.class)) != null) {
                         GetSet getSet = (GetSet) childAnnotation;
-                        accessors.add(new GetSetDescriptor(true, child, getSet.dependsOn()));
+                        accessors.add(new GetSetDescriptor(true, true, child, getSet.dependsOn()));
+                    } else if ((childAnnotation = child.getAnnotation(com.dellkan.robobinding.helpers.modelgen.Set.class)) != null) {
+                        com.dellkan.robobinding.helpers.modelgen.Set set = (com.dellkan.robobinding.helpers.modelgen.Set) childAnnotation;
+                        accessors.add(new GetSetDescriptor(true, true, child, set.dependsOn()));
                     }
 
                     // Validation
