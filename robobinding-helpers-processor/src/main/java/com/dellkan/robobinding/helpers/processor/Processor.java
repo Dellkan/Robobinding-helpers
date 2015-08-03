@@ -37,6 +37,10 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
+/**
+ * Compiles together a bunch of utilities usable on models marked with {@link com.dellkan.robobinding.helpers.modelgen.PresentationModel PresentationModel},
+ * for validation and usage through robobinding
+ */
 @SupportedAnnotationTypes({"com.dellkan.robobinding.helpers.modelgen.PresentationModel", "com.dellkan.robobinding.helpers.validation.ValidationType"})
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class Processor extends AbstractProcessor {

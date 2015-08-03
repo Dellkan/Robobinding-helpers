@@ -7,6 +7,10 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 
+/**
+ * Used by freemarker, during compile-time annotation processing.<br />
+ * Describes methods found on classes marked with {@link com.dellkan.robobinding.helpers.modelgen.PresentationModel PresentationModel}.
+ */
 public class MethodDescriptor {
     private ExecutableElement method;
 

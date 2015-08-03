@@ -2,8 +2,12 @@ package com.dellkan.robobinding.helpers.processor;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.util.Types;
 
+/**
+ * Used by freemarker, during compile-time annotation processing.<br />
+ * Describes attributes marked with {@link com.dellkan.robobinding.helpers.modelgen.Get Get} and
+ * {@link com.dellkan.robobinding.helpers.modelgen.GetSet GetSet}
+ */
 public class GetSetDescriptor {
     private boolean isSetter;
     private Element element;
