@@ -4,7 +4,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 
 /**
- * Used by freemarker, during compile-time annotation processing.<br />
+ * Used by freemarker, during compile-time annotation processing.
  * Describes attributes marked with {@link com.dellkan.robobinding.helpers.modelgen.Get Get} and
  * {@link com.dellkan.robobinding.helpers.modelgen.GetSet GetSet}
  */

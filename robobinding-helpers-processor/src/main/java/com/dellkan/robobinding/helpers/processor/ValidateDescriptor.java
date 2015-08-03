@@ -4,7 +4,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 /**
- * Used by freemarker, during compile-time annotation processing.<br />
+ * Used by freemarker, during compile-time annotation processing.
  * Describes attributes marked with a custom validation through {@link com.dellkan.robobinding.helpers.validation.ValidationProcessor ValidationProcessor}
  * and {@link com.dellkan.robobinding.helpers.validation.ValidateType ValidateType}.
  */

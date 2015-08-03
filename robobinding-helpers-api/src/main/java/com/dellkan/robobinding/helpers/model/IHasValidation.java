@@ -3,8 +3,7 @@ package com.dellkan.robobinding.helpers.model;
 import java.util.Map;
 
 /**
- * Helper functions to allow you to validate your model even while lacking access to the individually generated validator methods.<br />
- * <br />
+ * <p>Helper functions to allow you to validate your model even while lacking access to the individually generated validator methods.</p>
  * {@link Wrapper} implements this so you don't have to. Extend {@link Wrapper} to get these for free.
  */
 public interface IHasValidation {
@@ -38,7 +37,7 @@ public interface IHasValidation {
     /**
      * Get the error for a single field. Used when you know the field name, but can't be arsed to get the generated model.
      * @param field Field name you want to retrieve error for
-     * @return @StringRes resource pointing to chosen error for this field.
+     * @return {@literal @}StringRes resource pointing to chosen error for this field.
      */
     public int getError(String field);
 }

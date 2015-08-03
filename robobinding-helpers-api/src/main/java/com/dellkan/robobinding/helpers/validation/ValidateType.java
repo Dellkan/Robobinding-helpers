@@ -8,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This will allow you to create custom {@link com.dellkan.robobinding.helpers.validation.ValidationProcessor ValidationProcessor} to validate your attributes.<br/>
+ * This will allow you to create custom {@link com.dellkan.robobinding.helpers.validation.ValidationProcessor ValidationProcessor} to validate your attributes.
  * Must be put on a class that extends {@link com.dellkan.robobinding.helpers.validation.ValidationProcessor ValidationProcessor}.
  * @see com.dellkan.robobinding.helpers.validation.ValidationProcessor
  */

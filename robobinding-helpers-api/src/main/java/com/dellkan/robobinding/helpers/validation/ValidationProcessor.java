@@ -3,10 +3,10 @@ package com.dellkan.robobinding.helpers.validation;
 import java.lang.annotation.Annotation;
 
 /**
- * Extend this class to create custom validation of your attributes.<br />
- * At the moment, only one validation is possible per attribute.<br />
+ * <p>Extend this class to create custom validation of your attributes.
+ * At the moment, only one validation is possible per attribute.
  * Make a reference to your own custom annotation in {@link ValidateType}, put that on your attributes,
- * and this class will determine if that attribute is holding a valid value
+ * and this class will determine if that attribute is holding a valid value</p>
  */
 public abstract class ValidationProcessor {
     /**
@@ -35,7 +35,7 @@ public abstract class ValidationProcessor {
      * take care to evaluate through {@link #isValid}.
      * @param value The new value of the field. We can't know what types of fields you'll annotate, so we can't
      *              assume any types for value.
-     * @return A {@link @StringRes} resource pointing to an error, or 0 if there is no error.
+     * @return A @StringRes resource pointing to an error, or 0 if there is no error.
      */
     public abstract int getError(Object value);
 }
