@@ -6,12 +6,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Mark a field on your {@link PresentationModel} to get a setter auto-generated for it.
- * Numeric types are converted to strings.
- */
 @Documented
-@Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.FIELD)
-public @interface Set {
+@Retention(RetentionPolicy.CLASS)
+@Target(ElementType.METHOD)
+public @interface DependsOnStateOf {
+    String[] value();
 }

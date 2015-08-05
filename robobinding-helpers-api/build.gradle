@@ -3,6 +3,20 @@ apply plugin: 'java'
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
+repositories {
+    mavenCentral()
+    maven() {
+        name 'SonaType snapshot repository'
+        url 'https://oss.sonatype.org/content/repositories/snapshots'
+    }
+}
+
+ext {
+    robobindingVersion = 'latest.integration'
+}
+
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile ("org.robobinding:robobinding:$robobindingVersion:with-aop-and-dependencies") {
+        exclude group: 'com.google.guava', module: 'guava'
+    }
 }

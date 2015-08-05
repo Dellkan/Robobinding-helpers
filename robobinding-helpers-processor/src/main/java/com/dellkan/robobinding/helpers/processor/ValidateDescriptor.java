@@ -1,5 +1,7 @@
 package com.dellkan.robobinding.helpers.processor;
 
+import java.util.List;
+
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
@@ -8,12 +10,13 @@ import javax.lang.model.element.VariableElement;
  * Describes attributes marked with a custom validation through {@link com.dellkan.robobinding.helpers.validation.ValidationProcessor ValidationProcessor}
  * and {@link com.dellkan.robobinding.helpers.validation.ValidateType ValidateType}.
  */
-public class ValidateDescriptor {
+public class ValidateDescriptor extends Descriptor {
     private String annotation;
     private TypeElement element;
     private VariableElement childWithAnnotation;
 
-    public ValidateDescriptor(String annotation, TypeElement element, VariableElement childWithAnnotation) {
+    public ValidateDescriptor(List<MethodDescriptor> methods, String annotation, TypeElement element, VariableElement childWithAnnotation) {
+        super(methods);
         this.annotation = annotation;
         this.element = element;
         this.childWithAnnotation = childWithAnnotation;

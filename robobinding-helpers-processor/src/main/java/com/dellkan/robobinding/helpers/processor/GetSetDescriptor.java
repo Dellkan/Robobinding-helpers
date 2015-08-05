@@ -1,5 +1,7 @@
 package com.dellkan.robobinding.helpers.processor;
 
+import java.util.List;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 
@@ -9,13 +11,14 @@ import javax.lang.model.type.TypeKind;
  * {@link com.dellkan.robobinding.helpers.modelgen.Set Set} and
  * {@link com.dellkan.robobinding.helpers.modelgen.GetSet GetSet}
  */
-public class GetSetDescriptor {
+public class GetSetDescriptor extends Descriptor {
     private boolean isGetter;
     private boolean isSetter;
     private Element element;
     private String[] dependsOn;
 
-    public GetSetDescriptor(boolean isGetter, boolean isSetter, Element element, String[] dependsOn) {
+    public GetSetDescriptor(List<MethodDescriptor> methods, boolean isGetter, boolean isSetter, Element element, String[] dependsOn) {
+        super(methods);
         this.isGetter = isGetter;
         this.isSetter = isSetter;
         this.element = element;

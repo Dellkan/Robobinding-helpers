@@ -2,8 +2,10 @@
 
     private ValidationProcessor ${item.name}ErrorProcessor;
 
+    <#assign methodName>is${item.name?cap_first}Valid</#assign>
+    <#if !item.methodExists(methodName)>
     @DependsOnStateOf({"${item.name}"})
-    public boolean is${item.name?cap_first}Valid() {
+    public boolean ${methodName}() {
         if (this.${item.name}ErrorProcessor == null) {
             try {
                 Annotation annotation = this.data.getClass().getDeclaredField("${item.name}").getAnnotation(${item.annotationType}.class);
@@ -17,9 +19,12 @@
         }
         return false;
     }
+    </#if>
 
+    <#assign methodName>get${item.name?cap_first}Error</#assign>
+    <#if !item.methodExists(methodName)>
     @DependsOnStateOf({"${item.name}"})
-    public int get${item.name?cap_first}Error() {
+    public int ${methodName}() {
         if (this.${item.name}ErrorProcessor == null) {
             try {
                 Annotation annotation = this.data.getClass().getDeclaredField("${item.name}").getAnnotation(${item.annotationType}.class);
@@ -33,6 +38,7 @@
         }
         return 0;
     }
+    </#if>
 </#list>
 
     public boolean isValid(String field) {

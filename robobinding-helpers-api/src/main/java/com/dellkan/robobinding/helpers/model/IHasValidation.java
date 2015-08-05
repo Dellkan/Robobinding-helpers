@@ -4,7 +4,7 @@ import java.util.Map;
 
 /**
  * <p>Helper functions to allow you to validate your model even while lacking access to the individually generated validator methods.</p>
- * {@link Wrapper} implements this so you don't have to. Extend {@link Wrapper} to get these for free.
+ * {@link PresentationModelWrapper} implements this so you don't have to. Extend {@link PresentationModelWrapper} to get these for free.
  */
 public interface IHasValidation {
     /**

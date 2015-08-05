@@ -1,29 +1,30 @@
-package ${package};
+package ${packageName};
 
 import org.robobinding.annotation.DependsOnStateOf;
+import org.robobinding.itempresentationmodel.ItemContext;
+import org.robobinding.itempresentationmodel.ItemPresentationModel;
 import org.robobinding.annotation.PresentationModel;
 import org.robobinding.presentationmodel.HasPresentationModelChangeSupport;
 import org.robobinding.presentationmodel.PresentationModelChangeSupport;
+import org.robobinding.widget.adapterview.ItemClickEvent;
 
 import com.dellkan.robobinding.helpers.model.IHasPresentationModel;
 import com.dellkan.robobinding.helpers.validation.ValidationProcessor;
 
-import java.lang.annotation.Annotation;
-
 @PresentationModel
-public class ${className}$$Helper implements HasPresentationModelChangeSupport, IHasPresentationModel {
+public class ${className}$$ItemHelper implements IHasPresentationModel, ItemPresentationModel<${className}> {
     private ${className} data;
     private final PresentationModelChangeSupport changeHandler;
-    public ${className}$$Helper(${className} data) {
-        this.data = data;
+    public ${className}$$ItemHelper() {
         this.changeHandler = new PresentationModelChangeSupport(this);
     }
 
     @Override
-    public PresentationModelChangeSupport getPresentationModelChangeSupport() {
-        return this.changeHandler;
+    public void updateData(${className} data, ItemContext itemContext) {
+        this.data = data;
     }
 
+    // Accessors
     <#list accessors as item>
         <#include "/Accessor.ftl">
     </#list>
@@ -36,11 +37,10 @@ public class ${className}$$Helper implements HasPresentationModelChangeSupport, 
     // Validation
     <#include "/Validator.ftl">
 
-
     // Utilities
     public void refresh() {
         <#list accessors as item>
-        this.changeHandler.firePropertyChange("${item.name}");
+            this.changeHandler.firePropertyChange("${item.name}");
         </#list>
     }
 

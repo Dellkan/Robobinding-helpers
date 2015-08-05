@@ -13,9 +13,11 @@ import javax.lang.model.type.TypeKind;
  */
 public class MethodDescriptor {
     private ExecutableElement method;
+    private String[] dependsOn;
 
-    public MethodDescriptor(ExecutableElement method) {
+    public MethodDescriptor(ExecutableElement method, String[] dependsOn) {
         this.method = method;
+        this.dependsOn = dependsOn;
     }
 
     public String getName() {
@@ -37,6 +39,9 @@ public class MethodDescriptor {
         if (this.method.getReturnType().getKind().equals(TypeKind.VOID)) {
             return "void";
         }
+        if (this.method.getReturnType().getKind().isPrimitive()) {
+            return this.method.getReturnType().getKind().name().toLowerCase();
+        }
         return Util.typeToString(this.method.getReturnType());
     }
 
@@ -56,5 +61,9 @@ public class MethodDescriptor {
         public String getName() {
             return name;
         }
+    }
+
+    public String[] getDependsOn() {
+        return dependsOn != null ? dependsOn : new String[]{};
     }
 }

@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 /**
  * Mark a model with this annotation to make it get picked up during compile-time for processing.
  * All models with this annotation can use {@link Get} and {@link GetSet} to get auto-generated getters/setters.
- * By extending Wrapper, you'll also get some convenience methods available on your model.
+ * By extending PresentationModelWrapper, you'll also get some convenience methods available on your model.
  * @see com.dellkan.robobinding.helpers.validation.ValidateType @ValidateType
  * @see com.dellkan.robobinding.helpers.validation.ValidationProcessor ValidationProcessor
  */

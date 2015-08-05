@@ -4,6 +4,7 @@ buildscript {
         jcenter()
     }
     dependencies {
+        classpath 'com.android.tools.build:gradle:1.2.3'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2'
     }
 }
@@ -56,6 +57,18 @@ allprojects {
             }
         }
     }
+
+    // Maven stuff
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+
+                groupId GROUP
+                version VERSION
+            }
+        }
+    }
 }
 
 subprojects {
@@ -82,6 +95,14 @@ subprojects {
         artifacts {
             published sourceJar
             published javadocJar
+        }
+
+        uploadArchives {
+            repositories {
+                mavenDeployer {
+                    mavenLocal()
+                }
+            }
         }
     }
 }

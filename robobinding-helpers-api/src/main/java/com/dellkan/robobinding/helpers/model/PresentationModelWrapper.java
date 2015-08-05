@@ -8,7 +8,7 @@ import java.util.Map;
  * You should make your {@link com.dellkan.robobinding.helpers.modelgen.PresentationModel PresentationModel} extend this class,
  * so it will get all these helpers methods.
  */
-public abstract class Wrapper implements IHasPresentationModel {
+public abstract class PresentationModelWrapper implements IHasPresentationModel {
     /**
      * A reference to the generated class
      */

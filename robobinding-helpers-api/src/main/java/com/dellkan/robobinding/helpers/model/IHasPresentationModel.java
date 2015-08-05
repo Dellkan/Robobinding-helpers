@@ -4,7 +4,7 @@ package com.dellkan.robobinding.helpers.model;
  * <p>Helpers for {@link com.dellkan.robobinding.helpers.modelgen.PresentationModel PresentationModel}.
  * By modifying directly without using the generated get/setters, we lose the update functionality robobinding uses
  * to notify itself of changes on the model. Hence, these methods can be used to run that update.</p>
- * {@link Wrapper} implements this so you don't have to. Extend {@link Wrapper} to get these for free.
+ * {@link PresentationModelWrapper} implements this so you don't have to. Extend {@link PresentationModelWrapper} to get these for free.
  */
 public interface IHasPresentationModel extends IHasValidation {
     /**
