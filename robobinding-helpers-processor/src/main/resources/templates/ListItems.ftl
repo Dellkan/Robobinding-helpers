@@ -13,9 +13,12 @@
     </#if>
 
     <#assign methodName>${item.name}Clicked</#assign>
+    <#assign onClickMethod>on${item.name?cap_first}Click</#assign>
     <#if !item.methodExists(methodName)>
     public void ${item.name}Clicked(ItemClickEvent event) {
-
+        <#if item.methodExists(onClickMethod)>
+        ${onClickMethod}(get${item.name?cap_first}().get(event.getPosition()));
+        </#if>
     }
     </#if>
 

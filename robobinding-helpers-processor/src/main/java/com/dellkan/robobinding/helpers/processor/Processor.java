@@ -7,6 +7,12 @@ import com.dellkan.robobinding.helpers.modelgen.ItemPresentationModel;
 import com.dellkan.robobinding.helpers.modelgen.ListItems;
 import com.dellkan.robobinding.helpers.modelgen.PresentationModel;
 import com.dellkan.robobinding.helpers.validation.ValidateType;
+import com.dellkan.robobinding.helpers.validation.processors.ValidateBooleanProcessor;
+import com.dellkan.robobinding.helpers.validation.processors.ValidateLengthProcessor;
+import com.dellkan.robobinding.helpers.validation.processors.ValidatePatternProcessor;
+import com.dellkan.robobinding.helpers.validation.validators.ValidateBoolean;
+import com.dellkan.robobinding.helpers.validation.validators.ValidateLength;
+import com.dellkan.robobinding.helpers.validation.validators.ValidatePattern;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -81,6 +87,11 @@ public class Processor extends AbstractProcessor {
                 customValidators.put(annotationClass, (TypeElement) element);
             }
         }
+        // Add premade validators
+        customValidators.put(ValidateBoolean.class.getCanonicalName(), processingEnv.getElementUtils().getTypeElement(ValidateBooleanProcessor.class.getCanonicalName()));
+        customValidators.put(ValidateLength.class.getCanonicalName(), processingEnv.getElementUtils().getTypeElement(ValidateLengthProcessor.class.getCanonicalName()));
+        customValidators.put(ValidatePattern.class.getCanonicalName(), processingEnv.getElementUtils().getTypeElement(ValidatePatternProcessor.class.getCanonicalName()));
+
         List<Element> elements = new ArrayList<>();
         elements.addAll(roundEnv.getElementsAnnotatedWith(PresentationModel.class));
         elements.addAll(roundEnv.getElementsAnnotatedWith(ItemPresentationModel.class));

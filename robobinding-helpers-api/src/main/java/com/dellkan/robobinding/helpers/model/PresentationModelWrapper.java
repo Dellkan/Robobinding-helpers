@@ -1,5 +1,6 @@
 package com.dellkan.robobinding.helpers.model;
 
+import java.lang.ref.SoftReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
@@ -12,19 +13,19 @@ public abstract class PresentationModelWrapper implements IHasPresentationModel 
     /**
      * A reference to the generated class
      */
-    private IHasPresentationModel presentationModel;
+    private SoftReference<IHasPresentationModel> presentationModel = new SoftReference<IHasPresentationModel>(null);
 
     /**
      * Give this to the robobinding.. binder, which uses the getters/setters.
      * @return A robobinding compatible class, compiled according to your annotation usages
      */
     public IHasPresentationModel getPresentationModel() {
-        if (presentationModel == null) {
+        if (presentationModel.get() == null) {
             Class<?> clazz;
             try {
                 clazz = Class.forName(this.getClass().getName() + "$$Helper");
                 Constructor<?> constructor = clazz.getConstructor(this.getClass());
-                presentationModel = (IHasPresentationModel) constructor.newInstance(this);
+                presentationModel = new SoftReference<>((IHasPresentationModel) constructor.newInstance(this));
             } catch (ClassNotFoundException e) {
             } catch (NoSuchMethodException e) {
                 e.printStackTrace();
@@ -36,7 +37,7 @@ public abstract class PresentationModelWrapper implements IHasPresentationModel 
                 e.printStackTrace();
             }
         }
-        return presentationModel;
+        return presentationModel.get();
     }
 
     @Override
