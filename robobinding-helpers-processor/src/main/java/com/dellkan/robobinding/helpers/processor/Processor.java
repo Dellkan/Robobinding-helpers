@@ -6,6 +6,7 @@ import com.dellkan.robobinding.helpers.modelgen.GetSet;
 import com.dellkan.robobinding.helpers.modelgen.ItemPresentationModel;
 import com.dellkan.robobinding.helpers.modelgen.ListItems;
 import com.dellkan.robobinding.helpers.modelgen.PresentationModel;
+import com.dellkan.robobinding.helpers.modelgen.SkipMethod;
 import com.dellkan.robobinding.helpers.validation.ValidateType;
 import com.dellkan.robobinding.helpers.validation.processors.ValidateBooleanProcessor;
 import com.dellkan.robobinding.helpers.validation.processors.ValidateLengthProcessor;
@@ -19,6 +20,7 @@ import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -92,7 +94,7 @@ public class Processor extends AbstractProcessor {
         customValidators.put(ValidateLength.class.getCanonicalName(), processingEnv.getElementUtils().getTypeElement(ValidateLengthProcessor.class.getCanonicalName()));
         customValidators.put(ValidatePattern.class.getCanonicalName(), processingEnv.getElementUtils().getTypeElement(ValidatePatternProcessor.class.getCanonicalName()));
 
-        List<Element> elements = new ArrayList<>();
+        Set<Element> elements = new HashSet<>();
         elements.addAll(roundEnv.getElementsAnnotatedWith(PresentationModel.class));
         elements.addAll(roundEnv.getElementsAnnotatedWith(ItemPresentationModel.class));
         for (Element element : elements) {
@@ -105,7 +107,7 @@ public class Processor extends AbstractProcessor {
 
             for (Element child : element.getEnclosedElements()) {
                 // Create list of existing methods
-                if (child.getKind() == ElementKind.METHOD && child.getModifiers().contains(Modifier.PUBLIC)) {
+                if (child.getKind() == ElementKind.METHOD && child.getModifiers().contains(Modifier.PUBLIC) && (child.getAnnotation(SkipMethod.class) == null)) {
                     ExecutableElement method = (ExecutableElement) child;
                     DependsOnStateOf annotation = child.getAnnotation(DependsOnStateOf.class);
 
@@ -144,33 +146,44 @@ public class Processor extends AbstractProcessor {
             input.put("validators", validators);
             input.put("listItems", listItems);
 
+            // Fill in variables
+            input.put("className", element.getSimpleName());
+            input.put("packageName", Util.getPackage(element));
+
             try {
                 // Create target file
-                JavaFileObject file;
+                JavaFileObject file = null;
 
                 // Get template
-                Template template;
+                Template template = null;
+
                 if (element.getAnnotation(PresentationModel.class) != null) {
                     template = cfg.getTemplate("PresentationModel.ftl");
                     file = processingEnv.getFiler().createSourceFile(Util.elementToString(element) + "$$Helper");
-                } else if (element.getAnnotation(ItemPresentationModel.class) != null) {
+
+                    Writer out = file.openWriter();
+
+                    // Process template
+                    template.process(input, out);
+
+                    // Write
+                    out.flush();
+                    out.close();
+                }
+
+                if (element.getAnnotation(ItemPresentationModel.class) != null) {
                     template = cfg.getTemplate("ItemPresentationModel.ftl");
                     file = processingEnv.getFiler().createSourceFile(Util.elementToString(element) + "$$ItemHelper");
-                } else {
-                    throw new Exception("Couldn't find appropriate template");
+
+                    Writer out = file.openWriter();
+
+                    // Process template
+                    template.process(input, out);
+
+                    // Write
+                    out.flush();
+                    out.close();
                 }
-                Writer out = file.openWriter();
-
-                // Fill in variables
-                input.put("className", element.getSimpleName());
-                input.put("packageName", Util.getPackage(element));
-
-                // Process template
-                template.process(input, out);
-
-                // Write
-                out.flush();
-                out.close();
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (TemplateException e) {
