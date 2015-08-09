@@ -1,5 +1,7 @@
 package com.dellkan.robobinding.helpers.processor;
 
+import com.dellkan.robobinding.helpers.validation.ValidateIf;
+
 import java.util.List;
 
 import javax.lang.model.element.TypeElement;
@@ -12,18 +14,22 @@ import javax.lang.model.element.VariableElement;
  */
 public class ValidateDescriptor extends Descriptor {
     private String annotation;
-    private TypeElement element;
+    private TypeElement processor;
     private VariableElement childWithAnnotation;
+    private ValidateIf validateIf;
+    private boolean isList;
 
-    public ValidateDescriptor(List<MethodDescriptor> methods, String annotation, TypeElement element, VariableElement childWithAnnotation) {
+    public ValidateDescriptor(List<MethodDescriptor> methods, String annotation, TypeElement processor, VariableElement childWithAnnotation, ValidateIf validateIf, boolean isList) {
         super(methods);
         this.annotation = annotation;
-        this.element = element;
+        this.processor = processor;
         this.childWithAnnotation = childWithAnnotation;
+        this.validateIf = validateIf;
+        this.isList = isList;
     }
 
     public String getProcessorType() {
-        return Util.typeToString(this.element.asType());
+        return Util.typeToString(this.processor.asType());
     }
 
     public String getAnnotationType() {
@@ -32,5 +38,21 @@ public class ValidateDescriptor extends Descriptor {
 
     public String getName() {
         return childWithAnnotation.getSimpleName().toString();
+    }
+
+    public boolean getHasValidateIf() {
+        return validateIf != null;
+    }
+
+    public String getValidateIf() {
+        return validateIf.value();
+    }
+
+    public String[] getDependsOn() {
+        return validateIf != null ? validateIf.dependsOn() : new String[]{};
+    }
+
+    public boolean getIsList() {
+        return isList;
     }
 }

@@ -10,8 +10,7 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.FIELD)
 @Inherited
-@Retention(RetentionPolicy.CLASS)
-public @interface ValidatePattern {
-    String value();
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ValidateSelected {
     int error() default 0;
 }

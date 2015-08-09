@@ -3,7 +3,7 @@ package com.dellkan.robobinding.helpers.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListItem<T> {
+public class ListContainer<T> {
     private List<T> items = new ArrayList<>();
     private T selectedItem = null;
 

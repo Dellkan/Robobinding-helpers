@@ -4,7 +4,7 @@
 
     <#assign methodName>is${item.name?cap_first}Valid</#assign>
     <#if !item.methodExists(methodName)>
-    @DependsOnStateOf({"${item.name}"})
+    @DependsOnStateOf({<#if item.isList>"${item.name}Selected"<#else>"${item.name}"</#if>})
     public boolean ${methodName}() {
         if (this.${item.name}ErrorProcessor == null) {
             try {
@@ -21,9 +21,17 @@
     }
     </#if>
 
+    <#assign methodName>is${item.name?cap_first}Invalid</#assign>
+    <#if !item.methodExists(methodName)>
+    @DependsOnStateOf({<#if item.isList>"${item.name}Selected"<#else>"${item.name}"</#if>})
+    public boolean ${methodName}() {
+        return !is${item.name?cap_first}Valid();
+    }
+    </#if>
+
     <#assign methodName>get${item.name?cap_first}Error</#assign>
     <#if !item.methodExists(methodName)>
-    @DependsOnStateOf({"${item.name}"})
+    @DependsOnStateOf({<#if item.isList>"${item.name}Selected"<#else>"${item.name}"</#if>})
     public int ${methodName}() {
         if (this.${item.name}ErrorProcessor == null) {
             try {
@@ -44,7 +52,7 @@
     public boolean isValid(String field) {
         switch(field.toLowerCase()) {
             <#list validators as item>
-            case "${item.name}?lower_case":
+            case "${item.name?lower_case}":
                 return is${item.name?cap_first}Valid();
             </#list>
             default:
@@ -52,16 +60,23 @@
         }
     }
 
-    <#list validators>@DependsOnStateOf({<#items as item>"${item.name}"<#sep>, </#items>})</#list>
+    <#list validators>@DependsOnStateOf({<#items as item>
+        "${item.name}"<#list item.dependsOn as dependency>, "${dependency}"</#list><#sep>,
+    </#items>})</#list>
     public boolean isValid() {
-        return <#list validators as item>is${item.name?cap_first}Valid()<#sep> &&
-            <#else>true</#list>;
+        return <#list validators as item>
+            <#if item.hasValidateIf>
+            ((!${item.validateIf}()) || (${item.validateIf}() && is${item.name?cap_first}Valid()))
+            <#else>is${item.name?cap_first}Valid()
+            </#if><#sep> &&
+            <#else>true
+        </#list>;
     }
 
     public int getError(String field) {
         switch(field.toLowerCase()) {
             <#list validators as item>
-            case "${item.name}?lower_case":
+            case "${item.name?lower_case}":
                 return get${item.name?cap_first}Error();
             </#list>
             default:

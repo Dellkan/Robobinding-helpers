@@ -13,7 +13,7 @@ public abstract class PresentationModelWrapper implements IHasPresentationModel 
     /**
      * A reference to the generated class
      */
-    private SoftReference<IHasPresentationModel> presentationModel = new SoftReference<IHasPresentationModel>(null);
+    private transient SoftReference<IHasPresentationModel> presentationModel = new SoftReference<IHasPresentationModel>(null);
 
     /**
      * Give this to the robobinding.. binder, which uses the getters/setters.

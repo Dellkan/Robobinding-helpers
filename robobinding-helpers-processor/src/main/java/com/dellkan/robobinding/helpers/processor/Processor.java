@@ -1,5 +1,6 @@
 package com.dellkan.robobinding.helpers.processor;
 
+import com.dellkan.robobinding.helpers.model.ListContainer;
 import com.dellkan.robobinding.helpers.modelgen.DependsOnStateOf;
 import com.dellkan.robobinding.helpers.modelgen.Get;
 import com.dellkan.robobinding.helpers.modelgen.GetSet;
@@ -7,13 +8,22 @@ import com.dellkan.robobinding.helpers.modelgen.ItemPresentationModel;
 import com.dellkan.robobinding.helpers.modelgen.ListItems;
 import com.dellkan.robobinding.helpers.modelgen.PresentationModel;
 import com.dellkan.robobinding.helpers.modelgen.SkipMethod;
+import com.dellkan.robobinding.helpers.validation.ValidateIf;
 import com.dellkan.robobinding.helpers.validation.ValidateType;
+import com.dellkan.robobinding.helpers.validation.ValidationProcessor;
 import com.dellkan.robobinding.helpers.validation.processors.ValidateBooleanProcessor;
 import com.dellkan.robobinding.helpers.validation.processors.ValidateLengthProcessor;
 import com.dellkan.robobinding.helpers.validation.processors.ValidatePatternProcessor;
+import com.dellkan.robobinding.helpers.validation.processors.ValidateSelectedProcessor;
 import com.dellkan.robobinding.helpers.validation.validators.ValidateBoolean;
-import com.dellkan.robobinding.helpers.validation.validators.ValidateLength;
+import com.dellkan.robobinding.helpers.validation.validators.ValidateLengthMax;
+import com.dellkan.robobinding.helpers.validation.validators.ValidateLengthMin;
+import com.dellkan.robobinding.helpers.validation.validators.ValidateLengthRange;
+import com.dellkan.robobinding.helpers.validation.validators.ValidateMax;
+import com.dellkan.robobinding.helpers.validation.validators.ValidateMin;
 import com.dellkan.robobinding.helpers.validation.validators.ValidatePattern;
+import com.dellkan.robobinding.helpers.validation.validators.ValidateRange;
+import com.dellkan.robobinding.helpers.validation.validators.ValidateSelected;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -33,13 +43,13 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.MirroredTypeException;
 import javax.tools.JavaFileObject;
 
 import freemarker.cache.ClassTemplateLoader;
@@ -60,6 +70,7 @@ import freemarker.template.TemplateException;
 public class Processor extends AbstractProcessor {
     private Messager messager;
     private Configuration cfg = new Configuration(Configuration.VERSION_2_3_23);
+    private Map<TypeElement, List<String>> customValidators = new HashMap<>();
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -75,24 +86,42 @@ public class Processor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        Map<String, TypeElement> customValidators = new HashMap<>();
         for (Element element : roundEnv.getElementsAnnotatedWith(ValidateType.class)) {
             if (element.getKind().isClass()) {
-                ValidateType annotation = element.getAnnotation(ValidateType.class);
-                String annotationClass = "";
-                try {
-                     annotationClass = annotation.value().getCanonicalName();
-                } catch (MirroredTypeException e) {
-                    annotationClass = Util.typeToString(e.getTypeMirror());
+                AnnotationValue annotationValue = null;
+                for (AnnotationMirror mirror : element.getAnnotationMirrors()) {
+                    for(Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : mirror.getElementValues().entrySet()) {
+                        if("value".equals(entry.getKey().getSimpleName().toString())) {
+                            annotationValue = entry.getValue();
+                            break;
+                        }
+                    }
                 }
-
-                customValidators.put(annotationClass, (TypeElement) element);
+                if (annotationValue != null) {
+                    List<String> annotationClasses = new ArrayList<>();
+                    if (annotationValue.getValue() instanceof List) {
+                        for (AnnotationValue classValue : (List<? extends AnnotationValue>)annotationValue.getValue()) {
+                            annotationClasses.add(classValue.getValue().toString());
+                        }
+                    } else {
+                        annotationClasses.add(annotationValue.getValue().toString());
+                    }
+                    customValidators.put((TypeElement) element, annotationClasses);
+                }
             }
         }
         // Add premade validators
-        customValidators.put(ValidateBoolean.class.getCanonicalName(), processingEnv.getElementUtils().getTypeElement(ValidateBooleanProcessor.class.getCanonicalName()));
-        customValidators.put(ValidateLength.class.getCanonicalName(), processingEnv.getElementUtils().getTypeElement(ValidateLengthProcessor.class.getCanonicalName()));
-        customValidators.put(ValidatePattern.class.getCanonicalName(), processingEnv.getElementUtils().getTypeElement(ValidatePatternProcessor.class.getCanonicalName()));
+        addCustomValidator(ValidateBooleanProcessor.class, ValidateBoolean.class);
+        addCustomValidator(ValidatePatternProcessor.class, ValidatePattern.class);
+        addCustomValidator(ValidateLengthProcessor.class,
+                ValidateMin.class,
+                ValidateMax.class,
+                ValidateRange.class,
+                ValidateLengthMin.class,
+                ValidateLengthMax.class,
+                ValidateLengthRange.class
+        );
+        addCustomValidator(ValidateSelectedProcessor.class, ValidateSelected.class);
 
         Set<Element> elements = new HashSet<>();
         elements.addAll(roundEnv.getElementsAnnotatedWith(PresentationModel.class));
@@ -130,11 +159,26 @@ public class Processor extends AbstractProcessor {
                     }
 
                     // Validation
-                    for (Map.Entry<String, TypeElement> markerAnnotation : customValidators.entrySet()) {
+                    for (Map.Entry<TypeElement, List<String>> markerAnnotation : customValidators.entrySet()) {
                         for (AnnotationMirror mirror : child.getAnnotationMirrors()) {
-                            if (Util.typeToString(mirror.getAnnotationType()).equals(markerAnnotation.getKey())) {
-                                validators.add(new ValidateDescriptor(methods, markerAnnotation.getKey(), markerAnnotation.getValue(), (VariableElement) child));
-                                break;
+                            for (String annotationClass : markerAnnotation.getValue()) {
+                                if (Util.typeToString(mirror.getAnnotationType()).equals(annotationClass)) {
+                                    validators.add(new ValidateDescriptor(
+                                            methods,
+                                            annotationClass,
+                                            markerAnnotation.getKey(),
+                                            (VariableElement) child,
+                                            child.getAnnotation(ValidateIf.class),
+                                            processingEnv.getTypeUtils().isAssignable(
+                                                    child.asType(),
+                                                    processingEnv.getTypeUtils().getDeclaredType(
+                                                            processingEnv.getElementUtils().getTypeElement(ListContainer.class.getCanonicalName()),
+                                                            processingEnv.getTypeUtils().getWildcardType(null, null)
+                                                    )
+                                            )
+                                    ));
+                                    break;
+                                }
                             }
                         }
                     }
@@ -193,5 +237,14 @@ public class Processor extends AbstractProcessor {
             }
         }
         return false;
+    }
+
+    @SafeVarargs
+    private final void addCustomValidator(Class<? extends ValidationProcessor> processor, Class<? extends Annotation>... annotations) {
+        List<String> annotationClasses = new ArrayList<>();
+        for (Class<? extends Annotation> annotationClass : annotations) {
+            annotationClasses.add(annotationClass.getCanonicalName());
+        }
+        customValidators.put(processingEnv.getElementUtils().getTypeElement(processor.getCanonicalName()), annotationClasses);
     }
 }

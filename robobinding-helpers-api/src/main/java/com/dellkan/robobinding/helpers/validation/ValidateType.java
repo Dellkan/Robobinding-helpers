@@ -20,5 +20,5 @@ public @interface ValidateType {
      * Your custom annotation. Put your annotation on an attribute on your {@link com.dellkan.robobinding.helpers.modelgen.PresentationModel PresentationModel},
      * and {@link com.dellkan.robobinding.helpers.validation.ValidationProcessor#isValid(Object) ValidationProcessor.isValid} will run to validate it
      */
-    Class<? extends Annotation> value();
+    Class<? extends Annotation>[] value();
 }

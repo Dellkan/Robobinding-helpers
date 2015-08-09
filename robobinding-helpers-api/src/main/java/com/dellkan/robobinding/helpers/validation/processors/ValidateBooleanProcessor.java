@@ -1,12 +1,10 @@
 package com.dellkan.robobinding.helpers.validation.processors;
 
-import com.dellkan.robobinding.helpers.validation.ValidateType;
 import com.dellkan.robobinding.helpers.validation.ValidationProcessor;
 import com.dellkan.robobinding.helpers.validation.validators.ValidateBoolean;
 
 import java.lang.annotation.Annotation;
 
-@ValidateType(ValidateBoolean.class)
 public class ValidateBooleanProcessor extends ValidationProcessor {
     public ValidateBooleanProcessor(Annotation annotation) {
         super(annotation);
