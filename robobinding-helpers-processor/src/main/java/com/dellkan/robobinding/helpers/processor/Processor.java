@@ -1,6 +1,7 @@
 package com.dellkan.robobinding.helpers.processor;
 
 import com.dellkan.robobinding.helpers.model.ListContainer;
+import com.dellkan.robobinding.helpers.modelgen.AddToData;
 import com.dellkan.robobinding.helpers.modelgen.DependsOnStateOf;
 import com.dellkan.robobinding.helpers.modelgen.Get;
 import com.dellkan.robobinding.helpers.modelgen.GetSet;
@@ -8,6 +9,8 @@ import com.dellkan.robobinding.helpers.modelgen.ItemPresentationModel;
 import com.dellkan.robobinding.helpers.modelgen.ListItems;
 import com.dellkan.robobinding.helpers.modelgen.PresentationModel;
 import com.dellkan.robobinding.helpers.modelgen.SkipMethod;
+import com.dellkan.robobinding.helpers.modelgen.Stringify;
+import com.dellkan.robobinding.helpers.modelgen.TwoStateGetSet;
 import com.dellkan.robobinding.helpers.validation.ValidateIf;
 import com.dellkan.robobinding.helpers.validation.ValidateType;
 import com.dellkan.robobinding.helpers.validation.ValidationProcessor;
@@ -50,6 +53,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
 import freemarker.cache.ClassTemplateLoader;
@@ -133,10 +137,17 @@ public class Processor extends AbstractProcessor {
             List<GetSetDescriptor> accessors = new ArrayList<>();
             List<ValidateDescriptor> validators = new ArrayList<>();
             List<ListItemsDescriptor> listItems = new ArrayList<>();
+            List<AddDataDescriptor> dataItems = new ArrayList<>();
 
             for (Element child : element.getEnclosedElements()) {
                 // Create list of existing methods
-                if (child.getKind() == ElementKind.METHOD && child.getModifiers().contains(Modifier.PUBLIC) && (child.getAnnotation(SkipMethod.class) == null)) {
+                if (child.getKind() == ElementKind.METHOD && child.getModifiers().contains(Modifier.PUBLIC)) {
+                    if (child.getAnnotation(SkipMethod.class) != null) {
+                        continue;
+                    }
+                    if (child.getModifiers().contains(Modifier.STATIC)) {
+                        continue;
+                    }
                     ExecutableElement method = (ExecutableElement) child;
                     DependsOnStateOf annotation = child.getAnnotation(DependsOnStateOf.class);
 
@@ -148,12 +159,19 @@ public class Processor extends AbstractProcessor {
                     Annotation childAnnotation;
                     if ((childAnnotation = child.getAnnotation(Get.class)) != null) {
                         Get get = (Get) childAnnotation;
-                        accessors.add(new GetSetDescriptor(methods, true, false, child, get.dependsOn()));
+                        accessors.add(new GetSetDescriptor(methods, true, false, false, child, get.dependsOn()));
                     } else if ((childAnnotation = child.getAnnotation(GetSet.class)) != null) {
                         GetSet getSet = (GetSet) childAnnotation;
-                        accessors.add(new GetSetDescriptor(methods, true, true, child, getSet.dependsOn()));
+                        accessors.add(new GetSetDescriptor(methods, true, true, false, child, getSet.dependsOn()));
                     } else if ((childAnnotation = child.getAnnotation(com.dellkan.robobinding.helpers.modelgen.Set.class)) != null) {
-                        accessors.add(new GetSetDescriptor(methods, true, true, child, null));
+                        accessors.add(new GetSetDescriptor(methods, true, true, false, child, null));
+                    } else if ((childAnnotation = child.getAnnotation(TwoStateGetSet.class)) != null) {
+                        if (!Util.typeToString(child.asType()).equals("java.lang.Boolean")) {
+                            messager.printMessage(Diagnostic.Kind.ERROR, "TwoStateGetSet only supports boolean fields!", child);
+                        } else {
+                            TwoStateGetSet twoStateGetSet = (TwoStateGetSet) childAnnotation;
+                            accessors.add(new GetSetDescriptor(methods, true, true, true, child, twoStateGetSet.dependsOn()));
+                        }
                     } else if ((childAnnotation = child.getAnnotation(ListItems.class)) != null) {
                         listItems.add(new ListItemsDescriptor(methods, child));
                     }
@@ -183,12 +201,17 @@ public class Processor extends AbstractProcessor {
                         }
                     }
                 }
+                AddToData addToDataAnnotation = null;
+                if ((addToDataAnnotation = child.getAnnotation(AddToData.class)) != null) {
+                    dataItems.add(new AddDataDescriptor(methods, accessors, child, addToDataAnnotation));
+                }
             }
 
             input.put("accessors", accessors);
             input.put("methods", methods);
             input.put("validators", validators);
             input.put("listItems", listItems);
+            input.put("dataItems", dataItems);
 
             // Fill in variables
             input.put("className", element.getSimpleName());

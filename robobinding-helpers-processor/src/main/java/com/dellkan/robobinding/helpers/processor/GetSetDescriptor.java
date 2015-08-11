@@ -1,5 +1,7 @@
 package com.dellkan.robobinding.helpers.processor;
 
+import com.dellkan.robobinding.helpers.modelgen.Stringify;
+
 import java.util.List;
 
 import javax.lang.model.element.Element;
@@ -16,13 +18,15 @@ public class GetSetDescriptor extends Descriptor {
     private boolean isSetter;
     private Element element;
     private String[] dependsOn;
+    private boolean isTwoState;
 
-    public GetSetDescriptor(List<MethodDescriptor> methods, boolean isGetter, boolean isSetter, Element element, String[] dependsOn) {
+    public GetSetDescriptor(List<MethodDescriptor> methods, boolean isGetter, boolean isSetter, boolean isTwoState, Element element, String[] dependsOn) {
         super(methods);
         this.isGetter = isGetter;
         this.isSetter = isSetter;
         this.element = element;
         this.dependsOn = dependsOn;
+        this.isTwoState = isTwoState;
     }
 
     public boolean isGetter() {
@@ -46,7 +50,7 @@ public class GetSetDescriptor extends Descriptor {
     }
 
     public boolean isBoolean() {
-        return element.asType().getKind().equals(TypeKind.BOOLEAN);
+        return Util.typeToString(element.asType()).equals("java.lang.Boolean");
     }
 
     public boolean isNumeric() {
@@ -60,5 +64,17 @@ public class GetSetDescriptor extends Descriptor {
             default:
                 return false;
         }
+    }
+
+    public boolean isString() {
+        return Util.typeToString(element.asType()).equals("java.lang.String");
+    }
+
+    public boolean isTwoState() {
+        return this.isTwoState;
+    }
+
+    public boolean getForceString() {
+        return element.getAnnotation(Stringify.class) != null && (isString() || isNumeric());
     }
 }

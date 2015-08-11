@@ -69,4 +69,9 @@ public abstract class PresentationModelWrapper implements IHasPresentationModel 
     public int getError(String field) {
         return getPresentationModel().getError(field);
     }
+
+    @Override
+    public Map<String, Object> getData() {
+        return getPresentationModel().getData();
+    }
 }

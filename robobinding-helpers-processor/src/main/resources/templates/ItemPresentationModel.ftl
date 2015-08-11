@@ -11,6 +11,11 @@ import org.robobinding.widget.adapterview.ItemClickEvent;
 import com.dellkan.robobinding.helpers.model.IHasPresentationModel;
 import com.dellkan.robobinding.helpers.validation.ValidationProcessor;
 
+import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @PresentationModel
 public class ${className}$$ItemHelper implements IHasPresentationModel, ItemPresentationModel<${className}> {
     private ${className} data;
@@ -47,4 +52,7 @@ public class ${className}$$ItemHelper implements IHasPresentationModel, ItemPres
     public void refresh(String field) {
         this.changeHandler.firePropertyChange(field);
     }
+
+    // Data
+    <#include "/Data.ftl">
 }

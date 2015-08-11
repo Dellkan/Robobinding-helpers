@@ -1,5 +1,9 @@
 package com.dellkan.robobinding.helpers.model;
 
+import com.dellkan.robobinding.helpers.modelgen.AddToData;
+
+import java.util.Map;
+
 /**
  * <p>Helpers for {@link com.dellkan.robobinding.helpers.modelgen.PresentationModel PresentationModel}.
  * By modifying directly without using the generated get/setters, we lose the update functionality robobinding uses
@@ -16,4 +20,10 @@ public interface IHasPresentationModel extends IHasValidation {
      * @param field Field to refresh
      */
     public void refresh(String field);
+
+    /**
+     * Collects data from every method or field marked with the {@link AddToData AddToData} annotation
+     * @return map of data
+     */
+    public Map<String, Object> getData();
 }
