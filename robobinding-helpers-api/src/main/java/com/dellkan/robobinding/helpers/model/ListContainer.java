@@ -15,6 +15,16 @@ public class ListContainer<T> {
         this.selectedItem = selectedItem;
     }
 
+    private int selectedPosition = 0;
+    public int getSelectedPosition() {
+        return selectedPosition;
+    }
+
+    public void setSelectedPosition(int position) {
+        selectedPosition = position;
+        setSelectedItem(getItem(position));
+    }
+
     public List<T> getItems() {
         return items;
     }
@@ -33,5 +43,17 @@ public class ListContainer<T> {
 
     public T getItem(int position) {
         return this.items.get(position);
+    }
+
+    public void removeItem(int position) {
+        this.items.remove(position);
+    }
+
+    public void removeItem(T item) {
+        this.items.remove(item);
+    }
+
+    public int size() {
+        return items.size();
     }
 }

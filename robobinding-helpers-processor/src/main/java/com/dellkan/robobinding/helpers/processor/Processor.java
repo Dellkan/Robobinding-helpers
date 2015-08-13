@@ -9,7 +9,6 @@ import com.dellkan.robobinding.helpers.modelgen.ItemPresentationModel;
 import com.dellkan.robobinding.helpers.modelgen.ListItems;
 import com.dellkan.robobinding.helpers.modelgen.PresentationModel;
 import com.dellkan.robobinding.helpers.modelgen.SkipMethod;
-import com.dellkan.robobinding.helpers.modelgen.Stringify;
 import com.dellkan.robobinding.helpers.modelgen.TwoStateGetSet;
 import com.dellkan.robobinding.helpers.validation.ValidateIf;
 import com.dellkan.robobinding.helpers.validation.ValidateType;
@@ -203,7 +202,19 @@ public class Processor extends AbstractProcessor {
                 }
                 AddToData addToDataAnnotation = null;
                 if ((addToDataAnnotation = child.getAnnotation(AddToData.class)) != null) {
-                    dataItems.add(new AddDataDescriptor(methods, accessors, child, addToDataAnnotation));
+                    dataItems.add(new AddDataDescriptor(
+                            methods,
+                            accessors,
+                            child,
+                            addToDataAnnotation,
+                            processingEnv.getTypeUtils().isAssignable(
+                                    child.asType(),
+                                    processingEnv.getTypeUtils().getDeclaredType(
+                                            processingEnv.getElementUtils().getTypeElement(ListContainer.class.getCanonicalName()),
+                                            processingEnv.getTypeUtils().getWildcardType(null, null)
+                                    )
+                            )
+                    ));
                 }
             }
 

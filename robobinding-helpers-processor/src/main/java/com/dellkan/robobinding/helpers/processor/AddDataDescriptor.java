@@ -12,13 +12,15 @@ public class AddDataDescriptor extends Descriptor {
     List<GetSetDescriptor> accessors;
     private Element element;
     private AddToData annotation;
+    private boolean isList;
 
-    public AddDataDescriptor(List<MethodDescriptor> methods, List<GetSetDescriptor> accessors, Element element, AddToData annotation) {
+    public AddDataDescriptor(List<MethodDescriptor> methods, List<GetSetDescriptor> accessors, Element element, AddToData annotation, boolean isList) {
         super(methods);
         this.methods = methods;
         this.accessors = accessors;
         this.element = element;
         this.annotation = annotation;
+        this.isList = isList;
     }
 
     public String getName() {
@@ -32,12 +34,19 @@ public class AddDataDescriptor extends Descriptor {
         return annotation.alternativeName();
     }
 
+    public boolean isListContainer() {
+        return this.isList;
+    }
+
     public String getDataAccessor() {
         if (element.getKind().equals(ElementKind.METHOD)) {
             return getName();
         } else if (element.getKind().equals(ElementKind.FIELD)) {
             if (!annotation.alternativeDataFormatter().isEmpty() && methodExists(annotation.alternativeDataFormatter())) {
                 return "this.data." + annotation.alternativeDataFormatter();
+            }
+            if (isListContainer()) {
+                return "getListContainerData" + getName().substring(0, 1).toUpperCase() + getName().substring(1);
             }
             for (MethodDescriptor method : methods) {
                 if (method.getName().equalsIgnoreCase("get" + getName())) {

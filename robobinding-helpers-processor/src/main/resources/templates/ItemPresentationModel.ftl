@@ -42,6 +42,11 @@ public class ${className}$$ItemHelper implements IHasPresentationModel, ItemPres
     // Validation
     <#include "/Validator.ftl">
 
+    // List items
+    <#list listItems as item>
+        <#include "/ListItems.ftl">
+    </#list>
+
     // Utilities
     public void refresh() {
         <#list accessors as item>

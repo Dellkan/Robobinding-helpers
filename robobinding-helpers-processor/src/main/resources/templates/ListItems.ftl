@@ -1,5 +1,5 @@
 
-    @ItemPresentationModel(${item.type}$$ItemHelper.class)
+    @org.robobinding.annotation.ItemPresentationModel(${item.type}$$ItemHelper.class)
     public List<${item.type}> get${item.name?cap_first}() {
         return this.data.${item.name}.getItems();
     }
@@ -26,5 +26,22 @@
     <#if !item.methodExists(methodName)>
     public ${item.type} get${item.name?cap_first}Selected() {
         return this.data.${item.name}.getSelectedItem();
+    }
+    </#if>
+
+    <#assign methodName>get${item.name?cap_first}SelectedPosition</#assign>
+    <#if !item.methodExists(methodName)>
+    public int ${methodName}() {
+        return this.data.${item.name}.getSelectedPosition();
+    }
+    </#if>
+
+    <#assign methodName>set${item.name?cap_first}SelectedPosition</#assign>
+    <#if !item.methodExists(methodName)>
+    public void ${methodName}(int position) {
+        this.data.${item.name}.setSelectedPosition(position);
+        this.changeHandler.firePropertyChange("${item.name}");
+        this.changeHandler.firePropertyChange("${item.name}Selected");
+        this.changeHandler.firePropertyChange("${item.name}SelectedPosition");
     }
     </#if>
