@@ -1,9 +1,10 @@
 package com.dellkan.robobinding.helpers.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListContainer<T> {
+public class ListContainer<T> implements Serializable {
     private List<T> items = new ArrayList<>();
     private T selectedItem = null;
 
@@ -30,6 +31,7 @@ public class ListContainer<T> {
     }
 
     public void setItems(List<T> items) {
+        this.items.clear();
         this.items.addAll(items);
     }
 
@@ -55,5 +57,14 @@ public class ListContainer<T> {
 
     public int size() {
         return items.size();
+    }
+
+    public boolean contains(T item) {
+        for (T mItem : items) {
+            if (mItem.equals(item)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
