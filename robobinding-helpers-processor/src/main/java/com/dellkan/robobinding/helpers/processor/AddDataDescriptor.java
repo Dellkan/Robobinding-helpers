@@ -61,4 +61,12 @@ public class AddDataDescriptor extends Descriptor {
         }
         return "";
     }
+
+    public boolean isConditional() {
+        return !annotation.onlyIf().isEmpty();
+    }
+
+    public String getConditionalMethod() {
+        return annotation.onlyIf();
+    }
 }

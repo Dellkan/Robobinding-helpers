@@ -52,6 +52,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
@@ -202,19 +203,29 @@ public class Processor extends AbstractProcessor {
                 }
                 AddToData addToDataAnnotation = null;
                 if ((addToDataAnnotation = child.getAnnotation(AddToData.class)) != null) {
-                    dataItems.add(new AddDataDescriptor(
-                            methods,
-                            accessors,
-                            child,
-                            addToDataAnnotation,
-                            processingEnv.getTypeUtils().isAssignable(
-                                    child.asType(),
-                                    processingEnv.getTypeUtils().getDeclaredType(
-                                            processingEnv.getElementUtils().getTypeElement(ListContainer.class.getCanonicalName()),
-                                            processingEnv.getTypeUtils().getWildcardType(null, null)
-                                    )
-                            )
-                    ));
+                    TypeMirror childType = null;
+                    if (child.getKind().equals(ElementKind.METHOD)) {
+                        childType = ((ExecutableElement) child).getReturnType();
+                    } else if (child.getKind().equals(ElementKind.FIELD)) {
+                        childType = child.asType();
+                    }
+                    if (childType != null) {
+                        dataItems.add(new AddDataDescriptor(
+                                methods,
+                                accessors,
+                                child,
+                                addToDataAnnotation,
+                                processingEnv.getTypeUtils().isAssignable(
+                                        childType,
+                                        processingEnv.getTypeUtils().getDeclaredType(
+                                                processingEnv.getElementUtils().getTypeElement(ListContainer.class.getCanonicalName()),
+                                                processingEnv.getTypeUtils().getWildcardType(null, null)
+                                        )
+                                )
+                        ));
+                    } else {
+                        messager.printMessage(Diagnostic.Kind.ERROR, "Couldn't process AddToData for child. Unable to determine (return)type", child);
+                    }
                 }
             }
 

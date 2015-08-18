@@ -12,7 +12,11 @@
     public Map<String, Object> getData() {
         Map<String, Object> data = new HashMap<String, Object>();
         <#list dataItems as item>
-        data.put("${item.dataName}", ${item.dataAccessor}());
-        </#list>
+        <#if item.conditional>
+        if (${item.conditionalMethod}()) {
+            data.put("${item.dataName}", ${item.dataAccessor}());
+        }
+        <#else>data.put("${item.dataName}", ${item.dataAccessor}());
+        </#if></#list>
         return data;
     }
