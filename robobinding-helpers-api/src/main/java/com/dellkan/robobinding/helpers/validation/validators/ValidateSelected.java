@@ -11,6 +11,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
+/**
+ * Use this to validate that a {@link com.dellkan.robobinding.helpers.model.ListContainer ListContainer<>} has a selected element, OR that a {@link java.lang.Boolean Boolean} has a value (either true or false)
+ */
 public @interface ValidateSelected {
     int error() default 0;
 }

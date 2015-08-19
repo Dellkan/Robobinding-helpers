@@ -55,6 +55,9 @@ public class AddDataDescriptor extends Descriptor {
             }
             for (GetSetDescriptor accessor : accessors) {
                 if (accessor.isGetter() && accessor.getName().equals(getName())) {
+                    if (accessor.isTwoState() || accessor.isBoolean()) {
+                        return "is" + getName().substring(0, 1).toUpperCase() + getName().substring(1);
+                    }
                     return "get" + getName().substring(0, 1).toUpperCase() + getName().substring(1);
                 }
             }

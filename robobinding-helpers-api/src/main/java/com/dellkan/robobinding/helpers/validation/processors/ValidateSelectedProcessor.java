@@ -25,8 +25,11 @@ public class ValidateSelectedProcessor extends ValidationProcessor {
                 return ((ListItemWithValidation) selectedValue).isValid((ListContainer) value);
             }
             return ((ListContainer) value).getSelectedItem() != null;
+        } else {
+            // If value isn't a ListContainer, we're gonna assume it's a boolean (checkbox, radios and the like). As such,
+            // we're only really interested in whether a value is set at all
+            return value != null;
         }
-        return false;
     }
 
     @Override
