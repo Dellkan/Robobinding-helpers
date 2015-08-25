@@ -15,7 +15,19 @@
             }
         }
         if (this.${item.name}ErrorProcessor != null) {
-            return this.${item.name}ErrorProcessor.isValid(this.data.${item.name});
+            boolean skipCheck = false;
+            <#if item.hasValidateIfValue>
+            <#if item.numeric>
+            skipCheck = ((Number) this.data.${item.name}) == null || ((Number) this.data.${item.name}).doubleValue() == 0D;
+            <#elseif item.boolean>
+            skipCheck = ((${item.type}) this.data.${item.name}) == null;
+            <#elseif item.string>
+            skipCheck = this.data.${item.name} == null || this.data.${item.name}.trim().isEmpty() || this.data.${item.name}.equalsIgnoreCase("0");
+            <#else>
+            skipCheck = this.data.${item.name} == null;
+            </#if>
+            </#if>
+            return skipCheck || this.${item.name}ErrorProcessor.isValid(this.data.${item.name});
         }
         return false;
     }
@@ -42,7 +54,9 @@
             }
         }
         if (this.${item.name}ErrorProcessor != null) {
-            return this.${item.name}ErrorProcessor.getError(this.data.${item.name});
+            if (is${item.name?cap_first}Invalid()) {
+                return this.${item.name}ErrorProcessor.getError(this.data.${item.name});
+            }
         }
         return 0;
     }

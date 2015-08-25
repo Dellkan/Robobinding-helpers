@@ -11,6 +11,7 @@ import com.dellkan.robobinding.helpers.modelgen.PresentationModel;
 import com.dellkan.robobinding.helpers.modelgen.SkipMethod;
 import com.dellkan.robobinding.helpers.modelgen.TwoStateGetSet;
 import com.dellkan.robobinding.helpers.validation.ValidateIf;
+import com.dellkan.robobinding.helpers.validation.ValidateIfValue;
 import com.dellkan.robobinding.helpers.validation.ValidateType;
 import com.dellkan.robobinding.helpers.validation.ValidationProcessor;
 import com.dellkan.robobinding.helpers.validation.processors.ValidateBooleanProcessor;
@@ -187,6 +188,7 @@ public class Processor extends AbstractProcessor {
                                             markerAnnotation.getKey(),
                                             (VariableElement) child,
                                             child.getAnnotation(ValidateIf.class),
+                                            child.getAnnotation(ValidateIfValue.class),
                                             processingEnv.getTypeUtils().isAssignable(
                                                     child.asType(),
                                                     processingEnv.getTypeUtils().getDeclaredType(

@@ -1,6 +1,7 @@
 package com.dellkan.robobinding.helpers.processor;
 
 import com.dellkan.robobinding.helpers.validation.ValidateIf;
+import com.dellkan.robobinding.helpers.validation.ValidateIfValue;
 
 import java.util.List;
 
@@ -17,14 +18,16 @@ public class ValidateDescriptor extends Descriptor {
     private TypeElement processor;
     private VariableElement childWithAnnotation;
     private ValidateIf validateIf;
+    private ValidateIfValue validateIfValue;
     private boolean isList;
 
-    public ValidateDescriptor(List<MethodDescriptor> methods, String annotation, TypeElement processor, VariableElement childWithAnnotation, ValidateIf validateIf, boolean isList) {
+    public ValidateDescriptor(List<MethodDescriptor> methods, String annotation, TypeElement processor, VariableElement childWithAnnotation, ValidateIf validateIf, ValidateIfValue validateIfValue, boolean isList) {
         super(methods);
         this.annotation = annotation;
         this.processor = processor;
         this.childWithAnnotation = childWithAnnotation;
         this.validateIf = validateIf;
+        this.validateIfValue = validateIfValue;
         this.isList = isList;
     }
 
@@ -44,6 +47,10 @@ public class ValidateDescriptor extends Descriptor {
         return validateIf != null;
     }
 
+    public boolean getHasValidateIfValue() {
+        return validateIfValue != null;
+    }
+
     public String getValidateIf() {
         return validateIf.value();
     }
@@ -54,5 +61,33 @@ public class ValidateDescriptor extends Descriptor {
 
     public boolean getIsList() {
         return isList;
+    }
+
+    /*
+        Helpers needed for  hasValidateIfValue
+     */
+    public String getType() {
+        return Util.typeToString(childWithAnnotation.asType());
+    }
+
+    public boolean isBoolean() {
+        return Util.typeToString(childWithAnnotation.asType()).equals("java.lang.Boolean");
+    }
+
+    public boolean isNumeric() {
+        String type = Util.typeToString(childWithAnnotation.asType());
+        switch (type) {
+            case "java.lang.Integer":
+            case "java.lang.Float":
+            case "java.lang.Double":
+            case "java.lang.Long":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public boolean isString() {
+        return Util.typeToString(childWithAnnotation.asType()).equals("java.lang.String");
     }
 }
