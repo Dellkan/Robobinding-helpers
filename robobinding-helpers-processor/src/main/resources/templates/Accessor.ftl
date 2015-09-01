@@ -4,7 +4,7 @@
     <#if !item.methodExists(methodName)>
     <#list item.dependsOn>@DependsOnStateOf({<#items as dependency>"${dependency}"<#sep>,</#items>})</#list>
     public boolean ${methodName}() {
-        return (Boolean)this.data.${item.name} != null ? this.data.${item.name} : false;
+        return (Boolean)${item.accessor} != null ? ${item.accessor} : false;
     }
     </#if>
 
@@ -12,7 +12,7 @@
     <#if !item.methodExists(methodName)>
     <#list item.dependsOn>@DependsOnStateOf({<#items as dependency>"${dependency}"<#sep>,</#items>})</#list>
     public boolean ${methodName}() {
-        return (Boolean)this.data.${item.name} != null ? !this.data.${item.name} : true;
+        return (Boolean)${item.accessor} != null ? !${item.accessor} : true;
     }
     </#if>
     </#if>
@@ -21,13 +21,13 @@
     <#list item.dependsOn>@DependsOnStateOf({<#items as dependency>"${dependency}"<#sep>,</#items>})</#list>
     public <#if item.forceString>String<#elseif item.boolean>boolean<#else>${item.type}</#if> ${methodName}() {
         <#if item.numeric && item.forceString>
-        ${item.type} value = this.data.${item.name};
+        ${item.type} value = ${item.accessor};
         if (value != null) {
             return "" + value;
         }
         return null;
         <#else>
-        return this.data.${item.name};
+        return ${item.accessor};
         </#if>
     }
     </#if>
@@ -37,7 +37,7 @@
     <#assign methodName>set${item.name?cap_first}Active</#assign>
     <#if !item.methodExists(methodName)>
     public void ${methodName}(boolean toggle) {
-        this.data.${item.name} = toggle;
+        ${item.accessor} = toggle;
         this.changeHandler.firePropertyChange("${item.name}");
         this.changeHandler.firePropertyChange("${item.name}Active");
         this.changeHandler.firePropertyChange("${item.name}Inactive");
@@ -47,7 +47,7 @@
     <#assign methodName>set${item.name?cap_first}Inactive</#assign>
     <#if !item.methodExists(methodName)>
     public void ${methodName}(boolean toggle) {
-        this.data.${item.name} = !toggle;
+        ${item.accessor} = !toggle;
         this.changeHandler.firePropertyChange("${item.name}");
         this.changeHandler.firePropertyChange("${item.name}Active");
         this.changeHandler.firePropertyChange("${item.name}Inactive");
@@ -59,12 +59,12 @@
     public void ${methodName}(<#if item.forceString>String<#elseif item.boolean>boolean<#else>${item.type}</#if> value) {
         <#if item.numeric && item.forceString>
         try {
-            this.data.${item.name} = ${item.type}.valueOf(value);
+            ${item.accessor} = ${item.type}.valueOf(value);
         } catch (NumberFormatException e) {
 
         }
         <#else>
-        this.data.${item.name} = value;
+        ${item.accessor} = value;
         </#if>
         this.changeHandler.firePropertyChange("${item.name}");
     }

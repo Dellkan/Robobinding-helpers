@@ -20,9 +20,10 @@ public class ValidateDescriptor extends Descriptor {
     private ValidateIf validateIf;
     private ValidateIfValue validateIfValue;
     private boolean isList;
+    private String prefix = "";
 
-    public ValidateDescriptor(List<MethodDescriptor> methods, String annotation, TypeElement processor, VariableElement childWithAnnotation, ValidateIf validateIf, ValidateIfValue validateIfValue, boolean isList) {
-        super(methods);
+    public ValidateDescriptor(ModelDescriptor modelDescriptor, String annotation, TypeElement processor, VariableElement childWithAnnotation, ValidateIf validateIf, ValidateIfValue validateIfValue, boolean isList) {
+        super(modelDescriptor);
         this.annotation = annotation;
         this.processor = processor;
         this.childWithAnnotation = childWithAnnotation;
@@ -35,12 +36,32 @@ public class ValidateDescriptor extends Descriptor {
         return Util.typeToString(this.processor.asType());
     }
 
+    public TypeElement getProcessor() {
+        return this.processor;
+    }
+
     public String getAnnotationType() {
         return annotation;
     }
 
+    public String getAccessor() {
+        return "this.data." + prefix + childWithAnnotation.getSimpleName().toString();
+    }
+
+    public String getAccessorClass() {
+        if (!prefix.isEmpty()) {
+            // Get rid of the dot at the end of prefix by applying substring
+            return "this.data." + prefix.substring(0, prefix.length() - 1);
+        }
+        return "this.data";
+    }
+
     public String getName() {
         return childWithAnnotation.getSimpleName().toString();
+    }
+
+    public VariableElement getChild() {
+        return this.childWithAnnotation;
     }
 
     public boolean getHasValidateIf() {
@@ -51,8 +72,16 @@ public class ValidateDescriptor extends Descriptor {
         return validateIfValue != null;
     }
 
+    public ValidateIfValue getValidateIfValueAnnotation() {
+        return this.validateIfValue;
+    }
+
     public String getValidateIf() {
         return validateIf.value();
+    }
+
+    public ValidateIf getValidateIfAnnotation() {
+        return this.validateIf;
     }
 
     public String[] getDependsOn() {
@@ -89,5 +118,13 @@ public class ValidateDescriptor extends Descriptor {
 
     public boolean isString() {
         return Util.typeToString(childWithAnnotation.asType()).equals("java.lang.String");
+    }
+
+    public String getPrefix() {
+        return this.prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
     }
 }

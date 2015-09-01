@@ -14,10 +14,15 @@ import javax.lang.model.type.TypeKind;
 public class MethodDescriptor {
     private ExecutableElement method;
     private String[] dependsOn;
+    private String prefix = "";
 
     public MethodDescriptor(ExecutableElement method, String[] dependsOn) {
         this.method = method;
         this.dependsOn = dependsOn;
+    }
+
+    public String getAccessor() {
+        return "this.data." + prefix + method.getSimpleName().toString();
     }
 
     public String getName() {
@@ -43,6 +48,18 @@ public class MethodDescriptor {
             return this.method.getReturnType().getKind().name().toLowerCase();
         }
         return Util.typeToString(this.method.getReturnType());
+    }
+
+    public String getPrefix() {
+        return this.prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
+
+    public ExecutableElement getMethod() {
+        return this.method;
     }
 
     public static class Param {

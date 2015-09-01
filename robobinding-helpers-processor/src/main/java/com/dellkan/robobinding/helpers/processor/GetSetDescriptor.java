@@ -19,9 +19,10 @@ public class GetSetDescriptor extends Descriptor {
     private Element element;
     private String[] dependsOn;
     private boolean isTwoState;
+    private String prefix = "";
 
-    public GetSetDescriptor(List<MethodDescriptor> methods, boolean isGetter, boolean isSetter, boolean isTwoState, Element element, String[] dependsOn) {
-        super(methods);
+    public GetSetDescriptor(ModelDescriptor model, boolean isGetter, boolean isSetter, boolean isTwoState, Element element, String[] dependsOn) {
+        super(model);
         this.isGetter = isGetter;
         this.isSetter = isSetter;
         this.element = element;
@@ -41,8 +42,24 @@ public class GetSetDescriptor extends Descriptor {
         return Util.typeToString(element.asType());
     }
 
+    public String getAccessor() {
+        return "this.data." + prefix + element.getSimpleName().toString();
+    }
+
+    public Element getElement() {
+        return this.element;
+    }
+
     public String getName() {
         return element.getSimpleName().toString();
+    }
+
+    public String getPrefix() {
+        return this.prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
     }
 
     public String[] getDependsOn() {

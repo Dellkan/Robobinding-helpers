@@ -8,7 +8,7 @@
     public boolean ${methodName}() {
         if (this.${item.name}ErrorProcessor == null) {
             try {
-                Annotation annotation = this.data.getClass().getDeclaredField("${item.name}").getAnnotation(${item.annotationType}.class);
+                Annotation annotation = ${item.accessorClass}.getClass().getDeclaredField("${item.name}").getAnnotation(${item.annotationType}.class);
                 this.${item.name}ErrorProcessor = new ${item.processorType}(annotation);
             } catch (NoSuchFieldException e) {
                e.printStackTrace();
@@ -18,16 +18,16 @@
             boolean skipCheck = false;
             <#if item.hasValidateIfValue>
             <#if item.numeric>
-            skipCheck = ((Number) this.data.${item.name}) == null || ((Number) this.data.${item.name}).doubleValue() == 0D;
+            skipCheck = ((Number) ${item.accessor}) == null || ((Number) ${item.accessor}).doubleValue() == 0D;
             <#elseif item.boolean>
-            skipCheck = ((${item.type}) this.data.${item.name}) == null;
+            skipCheck = ((${item.type}) ${item.accessor}) == null;
             <#elseif item.string>
-            skipCheck = this.data.${item.name} == null || this.data.${item.name}.trim().isEmpty() || this.data.${item.name}.equalsIgnoreCase("0");
+            skipCheck = ${item.accessor} == null || ${item.accessor}.trim().isEmpty() || ${item.accessor}.equalsIgnoreCase("0");
             <#else>
-            skipCheck = this.data.${item.name} == null;
+            skipCheck = ${item.accessor} == null;
             </#if>
             </#if>
-            return skipCheck || this.${item.name}ErrorProcessor.isValid(this.data.${item.name});
+            return skipCheck || this.${item.name}ErrorProcessor.isValid(${item.accessor});
         }
         return false;
     }
@@ -47,7 +47,7 @@
     public int ${methodName}() {
         if (this.${item.name}ErrorProcessor == null) {
             try {
-                Annotation annotation = this.data.getClass().getDeclaredField("${item.name}").getAnnotation(${item.annotationType}.class);
+                Annotation annotation = ${item.accessorClass}.getClass().getDeclaredField("${item.name}").getAnnotation(${item.annotationType}.class);
                 this.${item.name}ErrorProcessor = new ${item.processorType}(annotation);
             } catch (NoSuchFieldException e) {
                e.printStackTrace();
@@ -55,7 +55,7 @@
         }
         if (this.${item.name}ErrorProcessor != null) {
             if (is${item.name?cap_first}Invalid()) {
-                return this.${item.name}ErrorProcessor.getError(this.data.${item.name});
+                return this.${item.name}ErrorProcessor.getError(${item.accessor});
             }
         }
         return 0;

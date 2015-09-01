@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Descriptor {
-    List<MethodDescriptor> list;
+    ModelDescriptor modelDescriptor;
 
-    public Descriptor(List<MethodDescriptor> list) {
-        this.list = list;
+    public Descriptor(ModelDescriptor modelDescriptor) {
+        this.modelDescriptor = modelDescriptor;
     }
 
     public boolean methodExists(String methodName) {
-        for (MethodDescriptor descriptor : list) {
+        for (MethodDescriptor descriptor : modelDescriptor.methods) {
             if (descriptor.getName().equals(methodName)) {
                 return true;
             }
@@ -21,7 +21,7 @@ public class Descriptor {
 
     public List<String> getMethods() {
         List<String> methods = new ArrayList<>();
-        for (MethodDescriptor descriptor : list) {
+        for (MethodDescriptor descriptor : modelDescriptor.methods) {
             methods.add(descriptor.getName());
         }
         return methods;

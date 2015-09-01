@@ -5,6 +5,7 @@ import com.dellkan.robobinding.helpers.modelgen.AddToData;
 import com.dellkan.robobinding.helpers.modelgen.DependsOnStateOf;
 import com.dellkan.robobinding.helpers.modelgen.Get;
 import com.dellkan.robobinding.helpers.modelgen.GetSet;
+import com.dellkan.robobinding.helpers.modelgen.IncludeModel;
 import com.dellkan.robobinding.helpers.modelgen.ItemPresentationModel;
 import com.dellkan.robobinding.helpers.modelgen.ListItems;
 import com.dellkan.robobinding.helpers.modelgen.PresentationModel;
@@ -76,6 +77,7 @@ public class Processor extends AbstractProcessor {
     private Messager messager;
     private Configuration cfg = new Configuration(Configuration.VERSION_2_3_23);
     private Map<TypeElement, List<String>> customValidators = new HashMap<>();
+    private Map<Element, ModelDescriptor> descriptors = new HashMap<>();
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -91,6 +93,7 @@ public class Processor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        // Retrieve custom validators
         for (Element element : roundEnv.getElementsAnnotatedWith(ValidateType.class)) {
             if (element.getKind().isClass()) {
                 AnnotationValue annotationValue = null;
@@ -128,114 +131,46 @@ public class Processor extends AbstractProcessor {
         );
         addCustomValidator(ValidateSelectedProcessor.class, ValidateSelected.class);
 
+        // Create generated viewmodel helpers
         Set<Element> elements = new HashSet<>();
         elements.addAll(roundEnv.getElementsAnnotatedWith(PresentationModel.class));
         elements.addAll(roundEnv.getElementsAnnotatedWith(ItemPresentationModel.class));
+
+        // Descriptors
         for (Element element : elements) {
-            Map<String, Object> input = new HashMap<>();
+            if (!descriptors.containsKey(element)) {
+                // Create an empty descriptor
+                ModelDescriptor descriptor = new ModelDescriptor(element);
 
-            List<MethodDescriptor> methods = new ArrayList<>();
-            List<GetSetDescriptor> accessors = new ArrayList<>();
-            List<ValidateDescriptor> validators = new ArrayList<>();
-            List<ListItemsDescriptor> listItems = new ArrayList<>();
-            List<AddDataDescriptor> dataItems = new ArrayList<>();
+                // Add it to the global list
+                descriptors.put(element, descriptor);
 
-            for (Element child : element.getEnclosedElements()) {
-                // Create list of existing methods
-                if (child.getKind() == ElementKind.METHOD && child.getModifiers().contains(Modifier.PUBLIC)) {
-                    if (child.getAnnotation(SkipMethod.class) != null) {
-                        continue;
-                    }
-                    if (child.getModifiers().contains(Modifier.STATIC)) {
-                        continue;
-                    }
-                    ExecutableElement method = (ExecutableElement) child;
-                    DependsOnStateOf annotation = child.getAnnotation(DependsOnStateOf.class);
+                // Populate it
+                traverseChildren(descriptor);
+            }
+        }
 
-                    methods.add(new MethodDescriptor(method, annotation != null ? annotation.value() : null));
-                }
+        // Flatten structure
+        for (Map.Entry<Element, ModelDescriptor> entry : descriptors.entrySet()) {
+            flattenStructure(entry.getValue(), null, null);
+        }
 
-                // Create list of getters, setters
-                else if (child.getKind() == ElementKind.FIELD) {
-                    Annotation childAnnotation;
-                    if ((childAnnotation = child.getAnnotation(Get.class)) != null) {
-                        Get get = (Get) childAnnotation;
-                        accessors.add(new GetSetDescriptor(methods, true, false, false, child, get.dependsOn()));
-                    } else if ((childAnnotation = child.getAnnotation(GetSet.class)) != null) {
-                        GetSet getSet = (GetSet) childAnnotation;
-                        accessors.add(new GetSetDescriptor(methods, true, true, false, child, getSet.dependsOn()));
-                    } else if ((childAnnotation = child.getAnnotation(com.dellkan.robobinding.helpers.modelgen.Set.class)) != null) {
-                        accessors.add(new GetSetDescriptor(methods, true, true, false, child, null));
-                    } else if ((childAnnotation = child.getAnnotation(TwoStateGetSet.class)) != null) {
-                        if (!Util.typeToString(child.asType()).equals("java.lang.Boolean")) {
-                            messager.printMessage(Diagnostic.Kind.ERROR, "TwoStateGetSet only supports boolean fields!", child);
-                        } else {
-                            TwoStateGetSet twoStateGetSet = (TwoStateGetSet) childAnnotation;
-                            accessors.add(new GetSetDescriptor(methods, true, true, true, child, twoStateGetSet.dependsOn()));
-                        }
-                    } else if ((childAnnotation = child.getAnnotation(ListItems.class)) != null) {
-                        listItems.add(new ListItemsDescriptor(methods, child));
-                    }
-
-                    // Validation
-                    for (Map.Entry<TypeElement, List<String>> markerAnnotation : customValidators.entrySet()) {
-                        for (AnnotationMirror mirror : child.getAnnotationMirrors()) {
-                            for (String annotationClass : markerAnnotation.getValue()) {
-                                if (Util.typeToString(mirror.getAnnotationType()).equals(annotationClass)) {
-                                    validators.add(new ValidateDescriptor(
-                                            methods,
-                                            annotationClass,
-                                            markerAnnotation.getKey(),
-                                            (VariableElement) child,
-                                            child.getAnnotation(ValidateIf.class),
-                                            child.getAnnotation(ValidateIfValue.class),
-                                            processingEnv.getTypeUtils().isAssignable(
-                                                    child.asType(),
-                                                    processingEnv.getTypeUtils().getDeclaredType(
-                                                            processingEnv.getElementUtils().getTypeElement(ListContainer.class.getCanonicalName()),
-                                                            processingEnv.getTypeUtils().getWildcardType(null, null)
-                                                    )
-                                            )
-                                    ));
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                AddToData addToDataAnnotation = null;
-                if ((addToDataAnnotation = child.getAnnotation(AddToData.class)) != null) {
-                    TypeMirror childType = null;
-                    if (child.getKind().equals(ElementKind.METHOD)) {
-                        childType = ((ExecutableElement) child).getReturnType();
-                    } else if (child.getKind().equals(ElementKind.FIELD)) {
-                        childType = child.asType();
-                    }
-                    if (childType != null) {
-                        dataItems.add(new AddDataDescriptor(
-                                methods,
-                                accessors,
-                                child,
-                                addToDataAnnotation,
-                                processingEnv.getTypeUtils().isAssignable(
-                                        childType,
-                                        processingEnv.getTypeUtils().getDeclaredType(
-                                                processingEnv.getElementUtils().getTypeElement(ListContainer.class.getCanonicalName()),
-                                                processingEnv.getTypeUtils().getWildcardType(null, null)
-                                        )
-                                )
-                        ));
-                    } else {
-                        messager.printMessage(Diagnostic.Kind.ERROR, "Couldn't process AddToData for child. Unable to determine (return)type", child);
-                    }
-                }
+        // Prepare output
+        for (Map.Entry<Element, ModelDescriptor> entry : descriptors.entrySet()) {
+            Element element = entry.getKey();
+            ModelDescriptor descriptor = entry.getValue();
+            if (descriptor.writtenToFile) {
+                continue;
             }
 
-            input.put("accessors", accessors);
-            input.put("methods", methods);
-            input.put("validators", validators);
-            input.put("listItems", listItems);
-            input.put("dataItems", dataItems);
+            descriptor.writtenToFile = true;
+
+            Map<String, Object> input = new HashMap<>();
+            input.put("accessors", descriptor.accessors);
+            input.put("methods", descriptor.methods);
+            input.put("validators", descriptor.validators);
+            input.put("listItems", descriptor.listItems);
+            input.put("dataItems", descriptor.dataItems);
 
             // Fill in variables
             input.put("className", element.getSimpleName());
@@ -293,5 +228,158 @@ public class Processor extends AbstractProcessor {
             annotationClasses.add(annotationClass.getCanonicalName());
         }
         customValidators.put(processingEnv.getElementUtils().getTypeElement(processor.getCanonicalName()), annotationClasses);
+    }
+
+    private void flattenStructure(ModelDescriptor child, ModelDescriptor parent, IncludeModelDescriptor includeDescriptor) {
+        for (IncludeModelDescriptor includeModelDescriptor : child.includeItems) {
+            messager.printMessage(Diagnostic.Kind.NOTE, "Found includeModel on " + child.model.getSimpleName().toString(), includeModelDescriptor.getFieldClassElement());
+            ModelDescriptor descriptor = descriptors.get(includeModelDescriptor.getFieldClassElement());
+            if (descriptor != null) {
+                flattenStructure(descriptor, child, includeModelDescriptor);
+            }
+        }
+        if (parent != null) {
+            // Add accessors
+            for (GetSetDescriptor item : child.accessors) {
+                if (!includeDescriptor.shouldSkipField(item.getName())) {
+                    GetSetDescriptor proxy = new GetSetDescriptor(child, item.isGetter(), item.isSetter(), item.isTwoState(), item.getElement(), item.getDependsOn());
+                    proxy.setPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + proxy.getPrefix());
+                    parent.accessors.add(proxy);
+                }
+            }
+
+            // Add methods
+            for (MethodDescriptor item : child.methods) {
+                if (!includeDescriptor.shouldSkipField(item.getName())) {
+                    MethodDescriptor proxy = new MethodDescriptor(item.getMethod(), item.getDependsOn());
+                    proxy.setPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + proxy.getPrefix());
+                    parent.methods.add(proxy);
+                }
+            }
+
+            // Add List items
+            for (ListItemsDescriptor item : child.listItems) {
+                if (!includeDescriptor.shouldSkipField(item.getName())) {
+                    ListItemsDescriptor proxy = new ListItemsDescriptor(child, item.getElement());
+                    proxy.setPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + proxy.getPrefix());
+                    parent.listItems.add(proxy);
+                }
+            }
+
+            // Add validators
+            for (ValidateDescriptor item : child.validators) {
+                if (!includeDescriptor.shouldSkipField(item.getName())) {
+                    ValidateDescriptor proxy = new ValidateDescriptor(child, item.getAnnotationType(), item.getProcessor(), item.getChild(), item.getValidateIfAnnotation(), item.getValidateIfValueAnnotation(), item.getIsList());
+                    proxy.setPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + proxy.getPrefix());
+                    parent.validators.add(proxy);
+                }
+            }
+
+            // Add data items
+            for (AddToDataDescriptor item : child.dataItems) {
+                if (!includeDescriptor.shouldSkipField(item.getName())) {
+                    AddToDataDescriptor proxy = new AddToDataDescriptor(child, item.getElement(), item.getAnnotation(), item.isListContainer());
+                    proxy.setPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + proxy.getPrefix());
+                    parent.dataItems.add(proxy);
+                }
+            }
+        }
+    }
+
+    private void traverseChildren(ModelDescriptor descriptor) {
+        for (Element child : descriptor.model.getEnclosedElements()) {
+            // Create list of existing methods
+            if (child.getKind() == ElementKind.METHOD && child.getModifiers().contains(Modifier.PUBLIC)) {
+                if (child.getAnnotation(SkipMethod.class) != null) {
+                    continue;
+                }
+                if (child.getModifiers().contains(Modifier.STATIC)) {
+                    continue;
+                }
+                ExecutableElement method = (ExecutableElement) child;
+                DependsOnStateOf annotation = child.getAnnotation(DependsOnStateOf.class);
+
+                descriptor.methods.add(new MethodDescriptor(method, annotation != null ? annotation.value() : null));
+            }
+
+            // Create list of getters, setters
+            else if (child.getKind() == ElementKind.FIELD) {
+                Annotation childAnnotation;
+                if ((childAnnotation = child.getAnnotation(Get.class)) != null) {
+                    Get get = (Get) childAnnotation;
+                    descriptor.accessors.add(new GetSetDescriptor(descriptor, true, false, false, child, get.dependsOn()));
+                } else if ((childAnnotation = child.getAnnotation(GetSet.class)) != null) {
+                    GetSet getSet = (GetSet) childAnnotation;
+                    descriptor.accessors.add(new GetSetDescriptor(descriptor, true, true, false, child, getSet.dependsOn()));
+                } else if ((childAnnotation = child.getAnnotation(com.dellkan.robobinding.helpers.modelgen.Set.class)) != null) {
+                    descriptor.accessors.add(new GetSetDescriptor(descriptor, true, true, false, child, null));
+                } else if ((childAnnotation = child.getAnnotation(TwoStateGetSet.class)) != null) {
+                    if (!Util.typeToString(child.asType()).equals("java.lang.Boolean")) {
+                        messager.printMessage(Diagnostic.Kind.ERROR, "TwoStateGetSet only supports boolean fields!", child);
+                    } else {
+                        TwoStateGetSet twoStateGetSet = (TwoStateGetSet) childAnnotation;
+                        descriptor.accessors.add(new GetSetDescriptor(descriptor, true, true, true, child, twoStateGetSet.dependsOn()));
+                    }
+                } else if ((childAnnotation = child.getAnnotation(ListItems.class)) != null) {
+                    descriptor.listItems.add(new ListItemsDescriptor(descriptor, child));
+                }
+
+                // Validation
+                for (Map.Entry<TypeElement, List<String>> markerAnnotation : customValidators.entrySet()) {
+                    for (AnnotationMirror mirror : child.getAnnotationMirrors()) {
+                        for (String annotationClass : markerAnnotation.getValue()) {
+                            if (Util.typeToString(mirror.getAnnotationType()).equals(annotationClass)) {
+                                descriptor.validators.add(new ValidateDescriptor(
+                                        descriptor,
+                                        annotationClass,
+                                        markerAnnotation.getKey(),
+                                        (VariableElement) child,
+                                        child.getAnnotation(ValidateIf.class),
+                                        child.getAnnotation(ValidateIfValue.class),
+                                        processingEnv.getTypeUtils().isAssignable(
+                                                child.asType(),
+                                                processingEnv.getTypeUtils().getDeclaredType(
+                                                        processingEnv.getElementUtils().getTypeElement(ListContainer.class.getCanonicalName()),
+                                                        processingEnv.getTypeUtils().getWildcardType(null, null)
+                                                )
+                                        )
+                                ));
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            AddToData addToDataAnnotation = null;
+            if ((addToDataAnnotation = child.getAnnotation(AddToData.class)) != null) {
+                TypeMirror childType = null;
+                if (child.getKind().equals(ElementKind.METHOD)) {
+                    childType = ((ExecutableElement) child).getReturnType();
+                } else if (child.getKind().equals(ElementKind.FIELD)) {
+                    childType = child.asType();
+                }
+                if (childType != null) {
+                    descriptor.dataItems.add(new AddToDataDescriptor(
+                            descriptor,
+                            child,
+                            addToDataAnnotation,
+                            processingEnv.getTypeUtils().isAssignable(
+                                    childType,
+                                    processingEnv.getTypeUtils().getDeclaredType(
+                                            processingEnv.getElementUtils().getTypeElement(ListContainer.class.getCanonicalName()),
+                                            processingEnv.getTypeUtils().getWildcardType(null, null)
+                                    )
+                            )
+                    ));
+                } else {
+                    messager.printMessage(Diagnostic.Kind.ERROR, "Couldn't process AddToData for child. Unable to determine (return)type", child);
+                }
+            }
+
+            IncludeModel includeModelAnnotation = null;
+            if ((includeModelAnnotation = child.getAnnotation(IncludeModel.class)) != null) {
+                descriptor.includeItems.add(new IncludeModelDescriptor(includeModelAnnotation, child, processingEnv.getTypeUtils().asElement(child.asType())));
+            }
+        }
     }
 }
