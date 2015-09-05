@@ -232,7 +232,6 @@ public class Processor extends AbstractProcessor {
 
     private void flattenStructure(ModelDescriptor child, ModelDescriptor parent, IncludeModelDescriptor includeDescriptor) {
         for (IncludeModelDescriptor includeModelDescriptor : child.includeItems) {
-            messager.printMessage(Diagnostic.Kind.NOTE, "Found includeModel on " + child.model.getSimpleName().toString(), includeModelDescriptor.getFieldClassElement());
             ModelDescriptor descriptor = descriptors.get(includeModelDescriptor.getFieldClassElement());
             if (descriptor != null) {
                 flattenStructure(descriptor, child, includeModelDescriptor);
