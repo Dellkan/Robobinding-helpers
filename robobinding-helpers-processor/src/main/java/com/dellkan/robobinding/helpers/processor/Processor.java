@@ -17,12 +17,14 @@ import com.dellkan.robobinding.helpers.validation.ValidateType;
 import com.dellkan.robobinding.helpers.validation.ValidationProcessor;
 import com.dellkan.robobinding.helpers.validation.processors.ValidateBooleanProcessor;
 import com.dellkan.robobinding.helpers.validation.processors.ValidateLengthProcessor;
+import com.dellkan.robobinding.helpers.validation.processors.ValidateListProcessor;
 import com.dellkan.robobinding.helpers.validation.processors.ValidatePatternProcessor;
 import com.dellkan.robobinding.helpers.validation.processors.ValidateSelectedProcessor;
 import com.dellkan.robobinding.helpers.validation.validators.ValidateBoolean;
 import com.dellkan.robobinding.helpers.validation.validators.ValidateLengthMax;
 import com.dellkan.robobinding.helpers.validation.validators.ValidateLengthMin;
 import com.dellkan.robobinding.helpers.validation.validators.ValidateLengthRange;
+import com.dellkan.robobinding.helpers.validation.validators.ValidateList;
 import com.dellkan.robobinding.helpers.validation.validators.ValidateMax;
 import com.dellkan.robobinding.helpers.validation.validators.ValidateMin;
 import com.dellkan.robobinding.helpers.validation.validators.ValidatePattern;
@@ -130,6 +132,7 @@ public class Processor extends AbstractProcessor {
                 ValidateLengthRange.class
         );
         addCustomValidator(ValidateSelectedProcessor.class, ValidateSelected.class);
+        addCustomValidator(ValidateListProcessor.class, ValidateList.class);
 
         // Create generated viewmodel helpers
         Set<Element> elements = new HashSet<>();
@@ -171,6 +174,7 @@ public class Processor extends AbstractProcessor {
             input.put("validators", descriptor.validators);
             input.put("listItems", descriptor.listItems);
             input.put("dataItems", descriptor.dataItems);
+            input.put("descriptor", descriptor);
 
             // Fill in variables
             input.put("className", element.getSimpleName());

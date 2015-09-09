@@ -18,4 +18,13 @@ public class ModelDescriptor {
     public ModelDescriptor(Element model) {
         this.model = model;
     }
+
+    public boolean methodExists(String methodName) {
+        for (MethodDescriptor descriptor : methods) {
+            if (descriptor.getName().equals(methodName)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

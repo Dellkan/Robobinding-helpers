@@ -4,7 +4,7 @@
 
     <#assign methodName>is${item.name?cap_first}Valid</#assign>
     <#if !item.methodExists(methodName)>
-    @DependsOnStateOf({<#if item.isList>"${item.name}Selected"<#else>"${item.name}"</#if>})
+    @DependsOnStateOf({<#if item.isList>"${item.name}Selected"<#else>"${item.name}"</#if><#list item.dependsOn as dependency>, "${dependency}"</#list>})
     public boolean ${methodName}() {
         if (this.${item.name}ErrorProcessor == null) {
             try {
@@ -16,6 +16,9 @@
         }
         if (this.${item.name}ErrorProcessor != null) {
             boolean skipCheck = false;
+            <#if item.hasValidateIf>
+            skipCheck = !${item.validateIf}();
+            </#if>
             <#if item.hasValidateIfValue>
             <#if item.numeric>
             skipCheck = ((Number) ${item.accessor}) == null || ((Number) ${item.accessor}).doubleValue() == 0D;
@@ -35,7 +38,7 @@
 
     <#assign methodName>is${item.name?cap_first}Invalid</#assign>
     <#if !item.methodExists(methodName)>
-    @DependsOnStateOf({<#if item.isList>"${item.name}Selected"<#else>"${item.name}"</#if>})
+    @DependsOnStateOf({<#if item.isList>"${item.name}Selected"<#else>"${item.name}"</#if><#list item.dependsOn as dependency>, "${dependency}"</#list>})
     public boolean ${methodName}() {
         return !is${item.name?cap_first}Valid();
     }
@@ -43,7 +46,7 @@
 
     <#assign methodName>get${item.name?cap_first}Error</#assign>
     <#if !item.methodExists(methodName)>
-    @DependsOnStateOf({<#if item.isList>"${item.name}Selected"<#else>"${item.name}"</#if>})
+    @DependsOnStateOf({<#if item.isList>"${item.name}Selected"<#else>"${item.name}"</#if><#list item.dependsOn as dependency>, "${dependency}"</#list>})
     public int ${methodName}() {
         if (this.${item.name}ErrorProcessor == null) {
             try {

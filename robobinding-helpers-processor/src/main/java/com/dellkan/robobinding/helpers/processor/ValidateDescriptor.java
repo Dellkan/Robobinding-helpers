@@ -3,8 +3,6 @@ package com.dellkan.robobinding.helpers.processor;
 import com.dellkan.robobinding.helpers.validation.ValidateIf;
 import com.dellkan.robobinding.helpers.validation.ValidateIfValue;
 
-import java.util.List;
-
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
