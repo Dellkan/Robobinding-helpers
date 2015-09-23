@@ -53,6 +53,9 @@ public class ${className}$$Helper implements HasPresentationModelChangeSupport, 
         <#list accessors as item>
         this.changeHandler.firePropertyChange("${item.name}");
         </#list>
+        <#list listItems as item>
+        this.changeHandler.firePropertyChange("${item.name}");
+        </#list>
     }
 
     public void refresh(String field) {
