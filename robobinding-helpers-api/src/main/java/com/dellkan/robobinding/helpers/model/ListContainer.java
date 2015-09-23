@@ -2,6 +2,7 @@ package com.dellkan.robobinding.helpers.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class ListContainer<T> implements Serializable {
@@ -30,7 +31,7 @@ public class ListContainer<T> implements Serializable {
         return items;
     }
 
-    public void setItems(List<T> items) {
+    public void setItems(Collection<T> items) {
         this.items.clear();
         this.items.addAll(items);
     }
