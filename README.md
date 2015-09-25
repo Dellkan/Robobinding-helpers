@@ -5,6 +5,7 @@ It does the following:
  - Add validation on fields
  - Easily extract information from viewmodels into a `HashMap<String, Object>`, 
  suitable for upload to external API's (easily jsonified)
+ - Combine/extend/include multiple models
  
  Due to the focus on validation and gathering of data, this library is most useful in form-heavy applications.
  
