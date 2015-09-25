@@ -11,6 +11,13 @@ import com.dellkan.robobinding.helpers.modelgen.ListItems;
 import com.dellkan.robobinding.helpers.modelgen.PresentationModel;
 import com.dellkan.robobinding.helpers.modelgen.SkipMethod;
 import com.dellkan.robobinding.helpers.modelgen.TwoStateGetSet;
+import com.dellkan.robobinding.helpers.processor.descriptors.AddToDataDescriptor;
+import com.dellkan.robobinding.helpers.processor.descriptors.GetSetDescriptor;
+import com.dellkan.robobinding.helpers.processor.descriptors.IncludeModelDescriptor;
+import com.dellkan.robobinding.helpers.processor.descriptors.ListItemsDescriptor;
+import com.dellkan.robobinding.helpers.processor.descriptors.MethodDescriptor;
+import com.dellkan.robobinding.helpers.processor.descriptors.ModelDescriptor;
+import com.dellkan.robobinding.helpers.processor.descriptors.ValidateDescriptor;
 import com.dellkan.robobinding.helpers.validation.ValidateIf;
 import com.dellkan.robobinding.helpers.validation.ValidateIfValue;
 import com.dellkan.robobinding.helpers.validation.ValidateType;
@@ -55,7 +62,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
@@ -143,7 +149,7 @@ public class Processor extends AbstractProcessor {
         for (Element element : elements) {
             if (!descriptors.containsKey(element)) {
                 // Create an empty descriptor
-                ModelDescriptor descriptor = new ModelDescriptor(element);
+                ModelDescriptor descriptor = new ModelDescriptor(element, messager);
 
                 // Add it to the global list
                 descriptors.put(element, descriptor);
@@ -162,18 +168,18 @@ public class Processor extends AbstractProcessor {
         for (Map.Entry<Element, ModelDescriptor> entry : descriptors.entrySet()) {
             Element element = entry.getKey();
             ModelDescriptor descriptor = entry.getValue();
-            if (descriptor.writtenToFile) {
+            if (descriptor.isWrittenToFile()) {
                 continue;
             }
 
-            descriptor.writtenToFile = true;
+            descriptor.setWrittenToFile(true);
 
             Map<String, Object> input = new HashMap<>();
-            input.put("accessors", descriptor.accessors);
-            input.put("methods", descriptor.methods);
-            input.put("validators", descriptor.validators);
-            input.put("listItems", descriptor.listItems);
-            input.put("dataItems", descriptor.dataItems);
+            input.put("accessors", descriptor.getAccessors());
+            input.put("methods", descriptor.getMethods());
+            input.put("validators", descriptor.getValidators());
+            input.put("listItems", descriptor.getListItems());
+            input.put("dataItems", descriptor.getDataItems());
             input.put("descriptor", descriptor);
 
             // Fill in variables
@@ -235,62 +241,74 @@ public class Processor extends AbstractProcessor {
     }
 
     private void flattenStructure(ModelDescriptor child, ModelDescriptor parent, IncludeModelDescriptor includeDescriptor) {
-        for (IncludeModelDescriptor includeModelDescriptor : child.includeItems) {
+        for (IncludeModelDescriptor includeModelDescriptor : child.getIncludeItems()) {
             ModelDescriptor descriptor = descriptors.get(includeModelDescriptor.getFieldClassElement());
             if (descriptor != null) {
                 flattenStructure(descriptor, child, includeModelDescriptor);
             }
         }
-        if (parent != null) {
+
+        if (parent != null && !includeDescriptor.isProcessed()) {
             // Add accessors
-            for (GetSetDescriptor item : child.accessors) {
+            for (GetSetDescriptor item : child.getAccessors()) {
                 if (!includeDescriptor.shouldSkipField(item.getName())) {
-                    GetSetDescriptor proxy = new GetSetDescriptor(child, item.isGetter(), item.isSetter(), item.isTwoState(), item.getElement(), item.getDependsOn());
-                    proxy.setPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + proxy.getPrefix());
-                    parent.accessors.add(proxy);
+                    GetSetDescriptor proxy = new GetSetDescriptor(parent, item.getField(), item.isGetter(), item.isSetter(), item.isTwoState(), item.getDependsOnRaw());
+                    proxy.setClassPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + item.getClassPrefix());
+                    proxy.setPrefixes(item.getPrefixes());
+                    proxy.addPrefix(includeDescriptor.getPrefix());
+                    parent.getAccessors().add(proxy);
                 }
             }
 
             // Add methods
-            for (MethodDescriptor item : child.methods) {
+            for (MethodDescriptor item : child.getMethods()) {
                 if (!includeDescriptor.shouldSkipField(item.getName())) {
-                    MethodDescriptor proxy = new MethodDescriptor(item.getMethod(), item.getDependsOn());
-                    proxy.setPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + proxy.getPrefix());
-                    parent.methods.add(proxy);
+                    MethodDescriptor proxy = new MethodDescriptor(parent, item.getMethod(), item.getDependsOnAnnotation());
+                    proxy.setClassPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + item.getClassPrefix());
+                    proxy.setPrefixes(item.getPrefixes());
+                    proxy.addPrefix(includeDescriptor.getPrefix());
+                    parent.getMethods().add(proxy);
                 }
             }
 
             // Add List items
-            for (ListItemsDescriptor item : child.listItems) {
+            for (ListItemsDescriptor item : child.getListItems()) {
                 if (!includeDescriptor.shouldSkipField(item.getName())) {
-                    ListItemsDescriptor proxy = new ListItemsDescriptor(child, item.getElement());
-                    proxy.setPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + proxy.getPrefix());
-                    parent.listItems.add(proxy);
+                    ListItemsDescriptor proxy = new ListItemsDescriptor(parent, item.getField());
+                    proxy.setClassPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + item.getClassPrefix());
+                    proxy.setPrefixes(item.getPrefixes());
+                    proxy.addPrefix(includeDescriptor.getPrefix());
+                    parent.getListItems().add(proxy);
                 }
             }
 
             // Add validators
-            for (ValidateDescriptor item : child.validators) {
+            for (ValidateDescriptor item : child.getValidators()) {
                 if (!includeDescriptor.shouldSkipField(item.getName())) {
-                    ValidateDescriptor proxy = new ValidateDescriptor(child, item.getAnnotationType(), item.getProcessor(), item.getChild(), item.getValidateIfAnnotation(), item.getValidateIfValueAnnotation(), item.getIsList());
-                    proxy.setPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + proxy.getPrefix());
-                    parent.validators.add(proxy);
+                    ValidateDescriptor proxy = new ValidateDescriptor(parent, item.getField(), item.getAnnotationType(), item.getProcessor(), item.getValidateIfAnnotation(), item.getValidateIfValueAnnotation(), item.getIsList());
+                    proxy.setClassPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + item.getClassPrefix());
+                    proxy.setPrefixes(item.getPrefixes());
+                    proxy.addPrefix(includeDescriptor.getPrefix());
+                    parent.getValidators().add(proxy);
                 }
             }
 
             // Add data items
-            for (AddToDataDescriptor item : child.dataItems) {
+            for (AddToDataDescriptor item : child.getDataItems()) {
                 if (!includeDescriptor.shouldSkipField(item.getName())) {
-                    AddToDataDescriptor proxy = new AddToDataDescriptor(child, item.getElement(), item.getAnnotation(), item.isListContainer());
-                    proxy.setPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + proxy.getPrefix());
-                    parent.dataItems.add(proxy);
+                    AddToDataDescriptor proxy = new AddToDataDescriptor(parent, item.getField(), item.getAnnotation(), item.isListContainer());
+                    proxy.setClassPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + item.getClassPrefix());
+                    proxy.setPrefixes(item.getPrefixes());
+                    proxy.addPrefix(includeDescriptor.getPrefix());
+                    parent.getDataItems().add(proxy);
                 }
             }
+            includeDescriptor.setProcessed(true);
         }
     }
 
     private void traverseChildren(ModelDescriptor descriptor) {
-        for (Element child : descriptor.model.getEnclosedElements()) {
+        for (Element child : descriptor.getModel().getEnclosedElements()) {
             // Create list of existing methods
             if (child.getKind() == ElementKind.METHOD && child.getModifiers().contains(Modifier.PUBLIC)) {
                 if (child.getAnnotation(SkipMethod.class) != null) {
@@ -302,7 +320,7 @@ public class Processor extends AbstractProcessor {
                 ExecutableElement method = (ExecutableElement) child;
                 DependsOnStateOf annotation = child.getAnnotation(DependsOnStateOf.class);
 
-                descriptor.methods.add(new MethodDescriptor(method, annotation != null ? annotation.value() : null));
+                descriptor.getMethods().add(new MethodDescriptor(descriptor, method, annotation));
             }
 
             // Create list of getters, setters
@@ -310,21 +328,21 @@ public class Processor extends AbstractProcessor {
                 Annotation childAnnotation;
                 if ((childAnnotation = child.getAnnotation(Get.class)) != null) {
                     Get get = (Get) childAnnotation;
-                    descriptor.accessors.add(new GetSetDescriptor(descriptor, true, false, false, child, get.dependsOn()));
+                    descriptor.getAccessors().add(new GetSetDescriptor(descriptor, child, true, false, false, get.dependsOn()));
                 } else if ((childAnnotation = child.getAnnotation(GetSet.class)) != null) {
                     GetSet getSet = (GetSet) childAnnotation;
-                    descriptor.accessors.add(new GetSetDescriptor(descriptor, true, true, false, child, getSet.dependsOn()));
+                    descriptor.getAccessors().add(new GetSetDescriptor(descriptor, child, true, true, false, getSet.dependsOn()));
                 } else if ((childAnnotation = child.getAnnotation(com.dellkan.robobinding.helpers.modelgen.Set.class)) != null) {
-                    descriptor.accessors.add(new GetSetDescriptor(descriptor, true, true, false, child, null));
+                    descriptor.getAccessors().add(new GetSetDescriptor(descriptor, child, true, true, false, null));
                 } else if ((childAnnotation = child.getAnnotation(TwoStateGetSet.class)) != null) {
                     if (!Util.typeToString(child.asType()).equals("java.lang.Boolean")) {
                         messager.printMessage(Diagnostic.Kind.ERROR, "TwoStateGetSet only supports boolean fields!", child);
                     } else {
                         TwoStateGetSet twoStateGetSet = (TwoStateGetSet) childAnnotation;
-                        descriptor.accessors.add(new GetSetDescriptor(descriptor, true, true, true, child, twoStateGetSet.dependsOn()));
+                        descriptor.getAccessors().add(new GetSetDescriptor(descriptor, child, true, true, true, twoStateGetSet.dependsOn()));
                     }
                 } else if ((childAnnotation = child.getAnnotation(ListItems.class)) != null) {
-                    descriptor.listItems.add(new ListItemsDescriptor(descriptor, child));
+                    descriptor.getListItems().add(new ListItemsDescriptor(descriptor, child));
                 }
 
                 // Validation
@@ -332,11 +350,11 @@ public class Processor extends AbstractProcessor {
                     for (AnnotationMirror mirror : child.getAnnotationMirrors()) {
                         for (String annotationClass : markerAnnotation.getValue()) {
                             if (Util.typeToString(mirror.getAnnotationType()).equals(annotationClass)) {
-                                descriptor.validators.add(new ValidateDescriptor(
+                                descriptor.getValidators().add(new ValidateDescriptor(
                                         descriptor,
+                                        child,
                                         annotationClass,
                                         markerAnnotation.getKey(),
-                                        (VariableElement) child,
                                         child.getAnnotation(ValidateIf.class),
                                         child.getAnnotation(ValidateIfValue.class),
                                         processingEnv.getTypeUtils().isAssignable(
@@ -362,7 +380,7 @@ public class Processor extends AbstractProcessor {
                     childType = child.asType();
                 }
                 if (childType != null) {
-                    descriptor.dataItems.add(new AddToDataDescriptor(
+                    descriptor.getDataItems().add(new AddToDataDescriptor(
                             descriptor,
                             child,
                             addToDataAnnotation,
@@ -381,7 +399,7 @@ public class Processor extends AbstractProcessor {
 
             IncludeModel includeModelAnnotation = null;
             if ((includeModelAnnotation = child.getAnnotation(IncludeModel.class)) != null) {
-                descriptor.includeItems.add(new IncludeModelDescriptor(includeModelAnnotation, child, processingEnv.getTypeUtils().asElement(child.asType())));
+                descriptor.getIncludeItems().add(new IncludeModelDescriptor(includeModelAnnotation, child, processingEnv.getTypeUtils().asElement(child.asType())));
             }
         }
     }

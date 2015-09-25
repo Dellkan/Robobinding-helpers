@@ -1,4 +1,4 @@
-package com.dellkan.robobinding.helpers.processor;
+package com.dellkan.robobinding.helpers.processor.descriptors;
 
 import com.dellkan.robobinding.helpers.modelgen.IncludeModel;
 
@@ -8,6 +8,7 @@ public class IncludeModelDescriptor {
     private IncludeModel annotation;
     private Element field;
     private Element fieldClassElement;
+    private boolean processed = false;
 
     public IncludeModelDescriptor(IncludeModel annotation, Element field, Element fieldClassElement) {
         this.annotation = annotation;
@@ -34,5 +35,17 @@ public class IncludeModelDescriptor {
             }
         }
         return false;
+    }
+
+    public String getPrefix() {
+        return annotation.prefix();
+    }
+
+    public boolean isProcessed() {
+        return processed;
+    }
+
+    public void setProcessed(boolean processed) {
+        this.processed = processed;
     }
 }

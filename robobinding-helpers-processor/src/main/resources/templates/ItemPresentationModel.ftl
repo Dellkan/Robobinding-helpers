@@ -49,12 +49,7 @@ public class ${className}$$ItemHelper implements IHasPresentationModel, ItemPres
 
     // Utilities
     public void refresh() {
-        <#list accessors as item>
-        this.changeHandler.firePropertyChange("${item.name}");
-        </#list>
-        <#list listItems as item>
-        this.changeHandler.firePropertyChange("${item.name}");
-        </#list>
+        this.changeHandler.refreshPresentationModel();
     }
 
     public void refresh(String field) {

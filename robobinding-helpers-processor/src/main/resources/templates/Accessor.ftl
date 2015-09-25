@@ -1,6 +1,6 @@
 <#if item.getter>
     <#if item.twoState>
-    <#assign methodName>is${item.name?cap_first}Active</#assign>
+    <#assign methodName>is${item.name}Active</#assign>
     <#if !item.methodExists(methodName)>
     <#list item.dependsOn>@DependsOnStateOf({<#items as dependency>"${dependency}"<#sep>,</#items>})</#list>
     public boolean ${methodName}() {
@@ -8,7 +8,7 @@
     }
     </#if>
 
-    <#assign methodName>is${item.name?cap_first}Inactive</#assign>
+    <#assign methodName>is${item.name}Inactive</#assign>
     <#if !item.methodExists(methodName)>
     <#list item.dependsOn>@DependsOnStateOf({<#items as dependency>"${dependency}"<#sep>,</#items>})</#list>
     public boolean ${methodName}() {
@@ -16,7 +16,7 @@
     }
     </#if>
     </#if>
-    <#assign methodName><#if item.boolean>is<#else>get</#if>${item.name?cap_first}</#assign>
+    <#assign methodName><#if item.boolean>is<#else>get</#if>${item.name}</#assign>
     <#if !item.methodExists(methodName)>
     <#list item.dependsOn>@DependsOnStateOf({<#items as dependency>"${dependency}"<#sep>,</#items>})</#list>
     public <#if item.forceString>String<#elseif item.boolean>boolean<#else>${item.type}</#if> ${methodName}() {
@@ -34,27 +34,27 @@
 </#if>
 <#if item.setter>
     <#if item.twoState>
-    <#assign methodName>set${item.name?cap_first}Active</#assign>
+    <#assign methodName>set${item.name}Active</#assign>
     <#if !item.methodExists(methodName)>
     public void ${methodName}(boolean toggle) {
         ${item.accessor} = toggle;
-        this.changeHandler.firePropertyChange("${item.name}");
-        this.changeHandler.firePropertyChange("${item.name}Active");
-        this.changeHandler.firePropertyChange("${item.name}Inactive");
+        this.changeHandler.firePropertyChange("${item.name?uncap_first}");
+        this.changeHandler.firePropertyChange("${item.name?uncap_first}Active");
+        this.changeHandler.firePropertyChange("${item.name?uncap_first}Inactive");
     }
     </#if>
 
-    <#assign methodName>set${item.name?cap_first}Inactive</#assign>
+    <#assign methodName>set${item.name}Inactive</#assign>
     <#if !item.methodExists(methodName)>
     public void ${methodName}(boolean toggle) {
         ${item.accessor} = !toggle;
-        this.changeHandler.firePropertyChange("${item.name}");
-        this.changeHandler.firePropertyChange("${item.name}Active");
-        this.changeHandler.firePropertyChange("${item.name}Inactive");
+        this.changeHandler.firePropertyChange("${item.name?uncap_first}");
+        this.changeHandler.firePropertyChange("${item.name?uncap_first}Active");
+        this.changeHandler.firePropertyChange("${item.name?uncap_first}Inactive");
     }
     </#if>
     </#if>
-    <#assign methodName>set${item.name?cap_first}</#assign>
+    <#assign methodName>set${item.name}</#assign>
     <#if !item.methodExists(methodName)>
     public void ${methodName}(<#if item.forceString>String<#elseif item.boolean>boolean<#else>${item.type}</#if> value) {
         <#if item.numeric && item.forceString>
@@ -66,7 +66,7 @@
         <#else>
         ${item.accessor} = value;
         </#if>
-        this.changeHandler.firePropertyChange("${item.name}");
+        this.changeHandler.firePropertyChange("${item.name?uncap_first}");
     }
     </#if>
 </#if>

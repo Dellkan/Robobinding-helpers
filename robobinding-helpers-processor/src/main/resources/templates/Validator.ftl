@@ -1,20 +1,20 @@
 <#list validators as item>
 
-    private ValidationProcessor ${item.name}ErrorProcessor;
+    private ValidationProcessor ${item.name?uncap_first}ErrorProcessor;
 
-    <#assign methodName>is${item.name?cap_first}Valid</#assign>
+    <#assign methodName>is${item.name}Valid</#assign>
     <#if !item.methodExists(methodName)>
-    @DependsOnStateOf({<#if item.isList>"${item.name}Selected"<#else>"${item.name}"</#if><#list item.dependsOn as dependency>, "${dependency}"</#list>})
+    @DependsOnStateOf({<#list item.dependsOn as dependency>"${dependency}"<#sep>, </#list>})
     public boolean ${methodName}() {
-        if (this.${item.name}ErrorProcessor == null) {
+        if (this.${item.name?uncap_first}ErrorProcessor == null) {
             try {
-                Annotation annotation = ${item.accessorClass}.getClass().getDeclaredField("${item.name}").getAnnotation(${item.annotationType}.class);
-                this.${item.name}ErrorProcessor = new ${item.processorType}(annotation);
+                Annotation annotation = ${item.accessorClass}.getClass().getDeclaredField("${item.fieldName}").getAnnotation(${item.annotationType}.class);
+                this.${item.name?uncap_first}ErrorProcessor = new ${item.processorType}(annotation);
             } catch (NoSuchFieldException e) {
                e.printStackTrace();
             }
         }
-        if (this.${item.name}ErrorProcessor != null) {
+        if (this.${item.name?uncap_first}ErrorProcessor != null) {
             boolean skipCheck = false;
             <#if item.hasValidateIf>
             skipCheck = !${item.validateIf}();
@@ -30,35 +30,35 @@
             skipCheck = ${item.accessor} == null;
             </#if>
             </#if>
-            return skipCheck || this.${item.name}ErrorProcessor.isValid(${item.accessor});
+            return skipCheck || this.${item.name?uncap_first}ErrorProcessor.isValid(${item.accessor});
         }
         return false;
     }
     </#if>
 
-    <#assign methodName>is${item.name?cap_first}Invalid</#assign>
+    <#assign methodName>is${item.name}Invalid</#assign>
     <#if !item.methodExists(methodName)>
-    @DependsOnStateOf({<#if item.isList>"${item.name}Selected"<#else>"${item.name}"</#if><#list item.dependsOn as dependency>, "${dependency}"</#list>})
+    @DependsOnStateOf({<#list item.dependsOn as dependency>"${dependency}"<#sep>, </#list>})
     public boolean ${methodName}() {
-        return !is${item.name?cap_first}Valid();
+        return !is${item.name}Valid();
     }
     </#if>
 
-    <#assign methodName>get${item.name?cap_first}Error</#assign>
+    <#assign methodName>get${item.name}Error</#assign>
     <#if !item.methodExists(methodName)>
-    @DependsOnStateOf({<#if item.isList>"${item.name}Selected"<#else>"${item.name}"</#if><#list item.dependsOn as dependency>, "${dependency}"</#list>})
+    @DependsOnStateOf({<#list item.dependsOn as dependency>"${dependency}"<#sep>, </#list>})
     public int ${methodName}() {
-        if (this.${item.name}ErrorProcessor == null) {
+        if (this.${item.name?uncap_first}ErrorProcessor == null) {
             try {
-                Annotation annotation = ${item.accessorClass}.getClass().getDeclaredField("${item.name}").getAnnotation(${item.annotationType}.class);
-                this.${item.name}ErrorProcessor = new ${item.processorType}(annotation);
+                Annotation annotation = ${item.accessorClass}.getClass().getDeclaredField("${item.fieldName}").getAnnotation(${item.annotationType}.class);
+                this.${item.name?uncap_first}ErrorProcessor = new ${item.processorType}(annotation);
             } catch (NoSuchFieldException e) {
                e.printStackTrace();
             }
         }
-        if (this.${item.name}ErrorProcessor != null) {
-            if (is${item.name?cap_first}Invalid()) {
-                return this.${item.name}ErrorProcessor.getError(${item.accessor});
+        if (this.${item.name?uncap_first}ErrorProcessor != null) {
+            if (is${item.name}Invalid()) {
+                return this.${item.name?uncap_first}ErrorProcessor.getError(${item.accessor});
             }
         }
         return 0;
@@ -70,21 +70,19 @@
         switch(field.toLowerCase()) {
             <#list validators as item>
             case "${item.name?lower_case}":
-                return is${item.name?cap_first}Valid();
+                return is${item.name}Valid();
             </#list>
             default:
                 return false;
         }
     }
 
-    <#list validators>@DependsOnStateOf({<#items as item>
-        "${item.name}"<#list item.dependsOn as dependency>, "${dependency}"</#list><#sep>,
-    </#items>})</#list>
+    <#list validators>@DependsOnStateOf({<#items as item><#list item.dependsOn as dependency>"${dependency}"<#sep>, </#list><#sep>, </#items>})</#list>
     public boolean isValid() {
         return <#list validators as item>
             <#if item.hasValidateIf>
-            ((!${item.validateIf}()) || (${item.validateIf}() && is${item.name?cap_first}Valid()))
-            <#else>is${item.name?cap_first}Valid()
+            ((!${item.validateIf}()) || (${item.validateIf}() && is${item.name}Valid()))
+            <#else>is${item.name}Valid()
             </#if><#sep> &&
             <#else>true
         </#list>;
@@ -94,7 +92,7 @@
         switch(field.toLowerCase()) {
             <#list validators as item>
             case "${item.name?lower_case}":
-                return get${item.name?cap_first}Error();
+                return get${item.name}Error();
             </#list>
             default:
                 return 0;
@@ -104,8 +102,8 @@
     public java.util.Map<String, Integer> getErrors() {
         java.util.Map<String, Integer> errors = new java.util.HashMap<>();
         <#list validators as item>
-            if (!is${item.name?cap_first}Valid()) {
-                errors.put("${item.name}", get${item.name?cap_first}Error());
+            if (!is${item.name}Valid()) {
+                errors.put("${item.name}", get${item.name}Error());
             }
         </#list>
         return errors;

@@ -1,10 +1,14 @@
-package com.dellkan.robobinding.helpers.processor;
+package com.dellkan.robobinding.helpers.processor.descriptors;
 
+import com.dellkan.robobinding.helpers.processor.Util;
 import com.dellkan.robobinding.helpers.validation.ValidateIf;
 import com.dellkan.robobinding.helpers.validation.ValidateIfValue;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 
 /**
  * Used by freemarker, during compile-time annotation processing.
@@ -14,17 +18,14 @@ import javax.lang.model.element.VariableElement;
 public class ValidateDescriptor extends Descriptor {
     private String annotation;
     private TypeElement processor;
-    private VariableElement childWithAnnotation;
     private ValidateIf validateIf;
     private ValidateIfValue validateIfValue;
     private boolean isList;
-    private String prefix = "";
 
-    public ValidateDescriptor(ModelDescriptor modelDescriptor, String annotation, TypeElement processor, VariableElement childWithAnnotation, ValidateIf validateIf, ValidateIfValue validateIfValue, boolean isList) {
-        super(modelDescriptor);
+    public ValidateDescriptor(ModelDescriptor modelDescriptor, Element field, String annotation, TypeElement processor, ValidateIf validateIf, ValidateIfValue validateIfValue, boolean isList) {
+        super(modelDescriptor, field);
         this.annotation = annotation;
         this.processor = processor;
-        this.childWithAnnotation = childWithAnnotation;
         this.validateIf = validateIf;
         this.validateIfValue = validateIfValue;
         this.isList = isList;
@@ -42,24 +43,12 @@ public class ValidateDescriptor extends Descriptor {
         return annotation;
     }
 
-    public String getAccessor() {
-        return "this.data." + prefix + childWithAnnotation.getSimpleName().toString();
-    }
-
     public String getAccessorClass() {
-        if (!prefix.isEmpty()) {
+        if (!getClassPrefix().isEmpty()) {
             // Get rid of the dot at the end of prefix by applying substring
-            return "this.data." + prefix.substring(0, prefix.length() - 1);
+            return "this.data." + getClassPrefix().substring(0, getClassPrefix().length() - 1);
         }
         return "this.data";
-    }
-
-    public String getName() {
-        return childWithAnnotation.getSimpleName().toString();
-    }
-
-    public VariableElement getChild() {
-        return this.childWithAnnotation;
     }
 
     public boolean getHasValidateIf() {
@@ -83,7 +72,30 @@ public class ValidateDescriptor extends Descriptor {
     }
 
     public String[] getDependsOn() {
-        return validateIf != null ? validateIf.dependsOn() : new String[]{};
+        List<String> dependencies = new ArrayList<>();
+        String prefix = getPrefix();
+        String name = getName();
+
+        name = name.substring(0, 1).toLowerCase() + name.substring(1);
+
+        dependencies.add(name);
+        if (isList) {
+            dependencies.add(name + "Selected");
+        }
+
+        if (validateIf != null) {
+            for (String dependency : validateIf.dependsOn()) {
+                if (prefix.length() > 1) {
+                    dependencies.add(prefix.substring(0, 1).toLowerCase() + prefix.substring(1) + dependency.substring(0, 1).toUpperCase() + dependency.substring(1));
+                } else {
+                    dependencies.add(dependency);
+                }
+            }
+        }
+
+        String[] processedDependencies = new String[dependencies.size()];
+        dependencies.toArray(processedDependencies);
+        return processedDependencies;
     }
 
     public boolean getIsList() {
@@ -93,17 +105,13 @@ public class ValidateDescriptor extends Descriptor {
     /*
         Helpers needed for  hasValidateIfValue
      */
-    public String getType() {
-        return Util.typeToString(childWithAnnotation.asType());
-    }
 
     public boolean isBoolean() {
-        return Util.typeToString(childWithAnnotation.asType()).equals("java.lang.Boolean");
+        return getType().equals("java.lang.Boolean");
     }
 
     public boolean isNumeric() {
-        String type = Util.typeToString(childWithAnnotation.asType());
-        switch (type) {
+        switch (getType()) {
             case "java.lang.Integer":
             case "java.lang.Float":
             case "java.lang.Double":
@@ -115,14 +123,6 @@ public class ValidateDescriptor extends Descriptor {
     }
 
     public boolean isString() {
-        return Util.typeToString(childWithAnnotation.asType()).equals("java.lang.String");
-    }
-
-    public String getPrefix() {
-        return this.prefix;
-    }
-
-    public void setPrefix(String prefix) {
-        this.prefix = prefix;
+        return getType().equals("java.lang.String");
     }
 }

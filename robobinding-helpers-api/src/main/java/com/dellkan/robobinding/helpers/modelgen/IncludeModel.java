@@ -11,4 +11,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface IncludeModel {
     String[] excludeFields() default "";
+    String prefix() default "";
 }

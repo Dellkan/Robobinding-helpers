@@ -47,7 +47,7 @@ import javax.lang.model.util.SimpleTypeVisitor6;
  * Utilities for handling types in annotation processors
  * Copied and slightly modified from https://github.com/square/dagger/blob/master/compiler/src/main/java/dagger/internal/codegen/Util.java
  */
-final class Util {
+final public class Util {
     private Util() {
     }
 
