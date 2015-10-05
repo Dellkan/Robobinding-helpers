@@ -2,6 +2,8 @@ package com.dellkan.robobinding.helpers.processor.descriptors;
 
 import com.dellkan.robobinding.helpers.modelgen.AddToData;
 
+import java.util.Arrays;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.tools.Diagnostic;
@@ -82,5 +84,9 @@ public class AddToDataDescriptor extends Descriptor {
 
     public AddToData getAnnotation() {
         return annotation;
+    }
+
+    public boolean inGroup(String group) {
+        return Arrays.asList(annotation.group()).contains(group);
     }
 }

@@ -73,4 +73,9 @@ public abstract class PresentationModelWrapper implements IHasPresentationModel 
     public Map<String, Object> getData() {
         return getPresentationModel().getData();
     }
+
+    @Override
+    public Map<String, Object> getData(String group) {
+        return getPresentationModel().getData(group);
+    }
 }

@@ -1,7 +1,10 @@
 package com.dellkan.robobinding.helpers.processor.descriptors;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.Element;
@@ -102,5 +105,13 @@ public class ModelDescriptor {
 
     public void setMessager(Messager messager) {
         this.messager = messager;
+    }
+
+    public List<String> getDataGroups() {
+        Set<String> groups = new HashSet<>();
+        for (AddToDataDescriptor descriptor : getDataItems()) {
+            groups.addAll(Arrays.asList(descriptor.getAnnotation().group()));
+        }
+        return new ArrayList<String>(groups);
     }
 }

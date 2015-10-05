@@ -26,4 +26,11 @@ public interface IHasPresentationModel extends IHasValidation {
      * @return map of data
      */
     public Map<String, Object> getData();
+
+    /**
+     * Collects data from every method or field marked with the {@link AddToData AddToData} annotation with the given group
+     * @param group The group to search for. Only data marked with this group will be returned
+     * @return map of data
+     */
+    public Map<String, Object> getData(String group);
 }

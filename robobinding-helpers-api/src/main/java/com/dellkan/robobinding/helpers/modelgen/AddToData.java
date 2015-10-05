@@ -12,5 +12,6 @@ import java.lang.annotation.Target;
 public @interface AddToData {
     String alternativeName() default "";
     String alternativeDataFormatter() default "";
+    String[] group() default "";
     String onlyIf() default "";
 }
