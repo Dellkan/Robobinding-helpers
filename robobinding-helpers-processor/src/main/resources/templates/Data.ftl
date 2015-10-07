@@ -11,31 +11,39 @@
 </#list>
     public Map<String, Object> getData(String group) {
         Map<String, Object> data = new HashMap<String, Object>();
+
+        Map<String, Object> parent = data;
+        Map<String, Object> child = data;
+
         switch (group) {
             <#list descriptor.dataGroups as group>
             case "${group}":
-                <#list dataItems as item>
-                <#if item.inGroup(group)>
+                <#list dataItems as item><#if item.inGroup(group)>
+                // Field ${item.dataName}
+                child = data;
+                <#list item.path as path><#if path?has_content>
+                // Path ${path}
+                parent = child;
+                if (!parent.containsKey("${path}")) {
+                    child = new HashMap<String, Object>();
+                    parent.put("${path}", child);
+                } else {
+                    child = (Map<String, Object>) parent.get("${path}");
+                }
+                </#if>
+                </#list>
                 <#if item.conditional>
                 if (${item.conditionalMethod}()) {
-                    data.put("${item.dataName}", ${item.dataAccessor}());
+                    child.put("${item.dataName}", ${item.dataAccessor}());
                 }<#else>
-                data.put("${item.dataName}", ${item.dataAccessor}());
-                </#if>
-                </#if></#list><#sep>break;
-                </#list>
+                child.put("${item.dataName}", ${item.dataAccessor}());
+
+                </#if></#if></#list><#sep>break;
+            </#list>
         }
         return data;
     }
 
     public Map<String, Object> getData() {
-        Map<String, Object> data = new HashMap<String, Object>();
-        <#list dataItems as item>
-        <#if item.conditional>
-        if (${item.conditionalMethod}()) {
-            data.put("${item.dataName}", ${item.dataAccessor}());
-        }<#else>
-        data.put("${item.dataName}", ${item.dataAccessor}());
-        </#if></#list>
-        return data;
+        return getData("");
     }

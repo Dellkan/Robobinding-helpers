@@ -12,6 +12,29 @@ import java.lang.annotation.Target;
 public @interface AddToData {
     String alternativeName() default "";
     String alternativeDataFormatter() default "";
+
+    /**
+     * See getData(group)
+     * @return
+     */
     String[] group() default "";
+
+    /**
+     * Nested structure this field should be put into. Use dots ' . ' to denote nested structures.
+     * <br />
+     * Example: parent.child
+     * <br /><br />
+     * Gives the following json:
+     * <pre>
+     * {@code
+     *
+     * "parent": {
+     *     "child": {
+     *         "yourExampleField": <value>
+     *     }
+     * }
+     * @return
+     */
+    String path() default "";
     String onlyIf() default "";
 }
