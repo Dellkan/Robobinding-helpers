@@ -3,6 +3,7 @@ package com.dellkan.robobinding.helpers.model;
 import com.dellkan.robobinding.helpers.modelgen.AddToData;
 
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * <p>Helpers for {@link com.dellkan.robobinding.helpers.modelgen.PresentationModel PresentationModel}.
@@ -33,4 +34,10 @@ public interface IHasPresentationModel extends IHasValidation {
      * @return map of data
      */
     public Map<String, Object> getData(String group);
+
+    public UUID getUniquePresentationModelID();
+
+    public void setParentPresentationModel(IHasPresentationModel parent);
+
+    public IHasPresentationModel getParentPresentationModel();
 }

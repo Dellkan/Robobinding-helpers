@@ -14,6 +14,7 @@ import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @PresentationModel
 public class ${className}$$Helper implements HasPresentationModelChangeSupport, IHasPresentationModel {
@@ -22,6 +23,9 @@ public class ${className}$$Helper implements HasPresentationModelChangeSupport, 
     public ${className}$$Helper(${className} data) {
         this.data = data;
         this.changeHandler = new PresentationModelChangeSupport(this);
+        <#list descriptor.includeItems as includeModel>
+            ${includeModel.accessor}.setParentPresentationModel(this.data);
+        </#list>
     }
 
     @Override
@@ -55,6 +59,21 @@ public class ${className}$$Helper implements HasPresentationModelChangeSupport, 
 
     public void refresh(String field) {
         this.changeHandler.firePropertyChange(field);
+    }
+
+    @Override
+    public UUID getUniquePresentationModelID() {
+        return this.data.getUniquePresentationModelID();
+    }
+
+    @Override
+    public IHasPresentationModel getParentPresentationModel() {
+        return this.data.getParentPresentationModel();
+    }
+
+    @Override
+    public void setParentPresentationModel(IHasPresentationModel parent) {
+        this.data.setParentPresentationModel(parent);
     }
 
     // Data

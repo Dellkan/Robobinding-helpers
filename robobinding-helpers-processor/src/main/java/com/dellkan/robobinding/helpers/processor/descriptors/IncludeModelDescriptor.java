@@ -37,6 +37,10 @@ public class IncludeModelDescriptor {
         return false;
     }
 
+    public String getAccessor() {
+        return "this.data." + getField().getSimpleName().toString();
+    }
+
     public String getPrefix() {
         return annotation.prefix();
     }

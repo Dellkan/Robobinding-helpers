@@ -48,7 +48,11 @@ public abstract class Descriptor {
 
     private List<String> prefixes = new ArrayList<>();
     public String getPrefix() {
-        return String.join("", prefixes);
+        String joined_prefix = "";
+        for (String prefix : prefixes) {
+            joined_prefix += prefix;
+        }
+        return joined_prefix;
     }
 
     public List<String> getPrefixes() {

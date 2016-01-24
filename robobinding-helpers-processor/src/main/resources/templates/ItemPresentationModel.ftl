@@ -15,6 +15,7 @@ import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @PresentationModel
 public class ${className}$$ItemHelper implements IHasPresentationModel, ItemPresentationModel<${className}> {
@@ -54,6 +55,21 @@ public class ${className}$$ItemHelper implements IHasPresentationModel, ItemPres
 
     public void refresh(String field) {
         this.changeHandler.firePropertyChange(field);
+    }
+
+    @Override
+    public UUID getUniquePresentationModelID() {
+        return this.data.getUniquePresentationModelID();
+    }
+
+    @Override
+    public IHasPresentationModel getParentPresentationModel() {
+        return this.data.getParentPresentationModel();
+    }
+
+    @Override
+    public void setParentPresentationModel(IHasPresentationModel parent) {
+        this.data.setParentPresentationModel(parent);
     }
 
     // Data

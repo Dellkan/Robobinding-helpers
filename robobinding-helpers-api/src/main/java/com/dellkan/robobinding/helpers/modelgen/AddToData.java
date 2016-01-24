@@ -21,9 +21,9 @@ public @interface AddToData {
 
     /**
      * Nested structure this field should be put into. Use dots ' . ' to denote nested structures.
-     * <br />
+     * <br>
      * Example: parent.child
-     * <br /><br />
+     * <br><br>
      * Gives the following json:
      * <pre>
      * {@code
@@ -33,6 +33,8 @@ public @interface AddToData {
      *         "yourExampleField": <value>
      *     }
      * }
+     * }
+     * </pre>
      * @return
      */
     String path() default "";
