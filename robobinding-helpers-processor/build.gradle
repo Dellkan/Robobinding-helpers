@@ -1,4 +1,5 @@
 apply plugin: 'java'
+apply plugin: 'com.novoda.bintray-release'
 
 repositories {
     jcenter()
@@ -12,4 +13,20 @@ dependencies {
     compile project(":robobinding-helpers-api")
     compile 'org.freemarker:freemarker:2.3.23'
     compile 'com.squareup:javapoet:1.2.0'
+}
+
+publish {
+    def metadata = project.rootProject.ext.metadata
+
+    groupId = metadata.groupId
+    uploadName = metadata.name
+    website = metadata.website
+
+    publishVersion = metadata.version
+
+    bintrayUser = metadata.user
+    bintrayKey = metadata.key
+
+    artifactId = 'robobinding-helpers-processor'
+    desc = 'An annotation processor for robobinding-helpers to generate helpers based on your annotations'
 }

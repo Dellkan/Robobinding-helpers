@@ -1,1 +1,1 @@
-include ':robobinding-helpers-processor', ':robobinding-helpers-api'
+include ':robobinding-helpers-processor', ':robobinding-helpers-api', ':robobinding-helpers-common'
