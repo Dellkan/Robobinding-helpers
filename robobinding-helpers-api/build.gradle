@@ -15,6 +15,7 @@ publish {
     website = metadata.website
 
     publishVersion = metadata.version
+    dryRun = metadata.dryRun
 
     bintrayUser = metadata.user
     bintrayKey = metadata.key

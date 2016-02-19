@@ -11,16 +11,22 @@ import org.robobinding.BindingContext;
 import org.robobinding.attribute.ChildAttributeResolverMappings;
 import org.robobinding.attribute.ResolvedGroupAttributes;
 import org.robobinding.attribute.StaticResourceAttribute;
+import org.robobinding.attribute.ValueModelAttribute;
+import org.robobinding.viewattribute.grouped.ChildViewAttributeFactory;
 import org.robobinding.viewattribute.grouped.ChildViewAttributeWithAttribute;
 import org.robobinding.viewattribute.grouped.ChildViewAttributesBuilder;
 import org.robobinding.viewattribute.grouped.GroupedViewAttribute;
 import org.robobinding.viewattribute.property.OneWayPropertyViewAttribute;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.robobinding.attribute.ChildAttributeResolvers.propertyAttributeResolver;
 import static org.robobinding.attribute.ChildAttributeResolvers.staticResourceAttributeResolver;
 
 public class WebViewAttributes implements GroupedViewAttribute<WebView> {
     private WebViewErrorLayoutAttribute errorLayoutAttribute;
+    private WebViewAdditionalHeadersAttribute mHeadersAttribute;
     @Override
     public String[] getCompulsoryAttributes() {
         return new String[] {"src"};
@@ -28,6 +34,7 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
 
     @Override
     public void mapChildAttributeResolvers(ChildAttributeResolverMappings resolverMappings) {
+        resolverMappings.map(propertyAttributeResolver(), "additionalHeaders");
         resolverMappings.map(propertyAttributeResolver(), "src");
         resolverMappings.map(staticResourceAttributeResolver(), "errorLayout");
     }
@@ -39,6 +46,12 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
 
     @Override
     public void setupChildViewAttributes(WebView view, ChildViewAttributesBuilder<WebView> childViewAttributesBuilder, BindingContext bindingContext) {
+        if (childViewAttributesBuilder.hasAttribute("additionalHeaders")) {
+            childViewAttributesBuilder.add("additionalHeaders", mHeadersAttribute = new WebViewAdditionalHeadersAttribute(
+                    childViewAttributesBuilder.valueModelAttributeFor("additionalHeaders")
+            ));
+            mHeadersAttribute.setInitialHeaders(bindingContext);
+        }
         childViewAttributesBuilder.add("src", new WebViewSourceAttribute());
         if (childViewAttributesBuilder.hasAttribute("errorLayout")) {
             childViewAttributesBuilder.add("errorLayout", errorLayoutAttribute = new WebViewErrorLayoutAttribute(view.getRootView()));
@@ -98,11 +111,48 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
         }
     }
 
+    // Attribute for extra headers
+    // FIXME: Not sure if OneWayPropertyViewAttribute is a good fit for what we're trying to do here.
+    private class WebViewAdditionalHeadersAttribute implements OneWayPropertyViewAttribute<WebView, Map<String, Object>> {
+        private Map<String, Object> headers = new HashMap<>();
+        private ValueModelAttribute attribute;
+
+        public WebViewAdditionalHeadersAttribute(ValueModelAttribute attribute) {
+            this.attribute = attribute;
+        }
+
+        public void setInitialHeaders(BindingContext bindingContext) {
+            Object value = bindingContext.getReadOnlyPropertyValueModel(this.attribute.getPropertyName()).getValue();
+            this.headers = (Map<String, Object>) value;
+        }
+
+        @Override
+        public void updateView(WebView webView, Map<String, Object> headers) {
+            this.headers = headers;
+        }
+
+        public Map<String, String> getHeaders() {
+            Map<String, String> convertedHeaders = new HashMap<>();
+            if (headers != null) {
+                for (Map.Entry<String, Object> entry : headers.entrySet()) {
+                    convertedHeaders.put(
+                            entry.getKey(),
+                            entry.getValue() != null ? entry.getValue().toString() : null
+                    );
+                }
+            }
+            return convertedHeaders;
+        }
+    }
     // Attribute for source
     private class WebViewSourceAttribute implements OneWayPropertyViewAttribute<WebView, String> {
         @Override
         public void updateView(WebView webView, String url) {
-            webView.loadUrl(url);
+            if (mHeadersAttribute != null) {
+                webView.loadUrl(url, mHeadersAttribute.getHeaders());
+            } else {
+                webView.loadUrl(url);
+            }
             if (errorLayoutAttribute != null) {
                 webView.setVisibility(View.VISIBLE);
                 errorLayoutAttribute.getView().setVisibility(View.GONE);

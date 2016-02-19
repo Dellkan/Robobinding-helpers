@@ -11,7 +11,7 @@ public class WebViewExtensions extends CustomViewBinding<WebView> {
     @Override
     public void mapBindingAttributes(BindingAttributeMappings<WebView> mappings) {
         super.mapBindingAttributes(mappings);
-        mappings.mapGroupedAttribute(WebViewAttributes.class, "src", "errorLayout");
+        mappings.mapGroupedAttribute(WebViewAttributes.class, "additionalHeaders", "src", "errorLayout");
 
         mappings.mapEvent(WebViewClickAttribute.class, "onClick");
     }
