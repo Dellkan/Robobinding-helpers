@@ -19,11 +19,11 @@ import static org.robobinding.attribute.ChildAttributeResolvers.enumChildAttribu
 import static org.robobinding.attribute.ChildAttributeResolvers.propertyAttributeResolver;
 
 public class ImageAttributes implements GroupedViewAttribute<ImageView> {
-    protected enum BOOLEAN {
-        TRUE, FALSE;
+    protected enum FIT {
+        NONE, CROPCENTER, CENTERINSIDE;
 
         private final String value;
-        private BOOLEAN() {
+        private FIT() {
             value = this.name().toLowerCase();
         }
 
@@ -40,7 +40,7 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
     @Override
     public void mapChildAttributeResolvers(ChildAttributeResolverMappings childAttributeResolverMappings) {
         childAttributeResolverMappings.map(propertyAttributeResolver(), "src");
-        childAttributeResolverMappings.map(enumChildAttributeResolver(BOOLEAN.class), "fit");
+        childAttributeResolverMappings.map(enumChildAttributeResolver(FIT.class), "fit");
     }
 
     @Override
@@ -52,8 +52,8 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
     public void setupChildViewAttributes(ImageView imageView, ChildViewAttributesBuilder<ImageView> childViewAttributesBuilder, BindingContext bindingContext) {
         childViewAttributesBuilder.add("src", srcAttribute = new ImageSrcAttribute());
         if (childViewAttributesBuilder.hasAttribute("fit")) {
-            EnumAttribute<BOOLEAN> value = childViewAttributesBuilder.enumAttributeFor("fit");
-            srcAttribute.setFit(value.getValue().equals(BOOLEAN.TRUE));
+            EnumAttribute<FIT> value = childViewAttributesBuilder.enumAttributeFor("fit");
+            srcAttribute.setFit(value.getValue());
         }
     }
 
@@ -64,10 +64,10 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
 
     // Src
     class ImageSrcAttribute implements OneWayMultiTypePropertyViewAttribute<ImageView> {
-        private boolean fit;
+        private FIT fit;
 
-        public void setFit(boolean toggle) {
-            fit = toggle;
+        public void setFit(FIT fit) {
+            this.fit = fit != null ? fit : FIT.NONE;
         }
 
         @Override
@@ -89,8 +89,13 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
                 RequestCreator request = Picasso.with(imageView.getContext())
                         .load(source);
 
-                if (fit) {
-                    request.fit().centerInside();
+                switch (fit) {
+                    case CROPCENTER:
+                        request.fit().centerCrop();
+                        break;
+                    case CENTERINSIDE:
+                        request.fit().centerInside();
+                        break;
                 }
 
                 request.into(imageView);
@@ -100,14 +105,21 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
         class StringImageSrcAttribute implements OneWayPropertyViewAttribute<ImageView, String> {
             @Override
             public void updateView(ImageView imageView, String source) {
-                RequestCreator request = Picasso.with(imageView.getContext())
-                        .load(source);
+                if (source != null && source.length() > 0) {
+                    RequestCreator request = Picasso.with(imageView.getContext())
+                            .load(source);
 
-                if (fit) {
-                    request.fit().centerInside();
+                    switch (fit) {
+                        case CROPCENTER:
+                            request.fit().centerCrop();
+                            break;
+                        case CENTERINSIDE:
+                            request.fit().centerInside();
+                            break;
+                    }
+
+                    request.into(imageView);
                 }
-
-                request.into(imageView);
             }
         }
 
@@ -118,13 +130,18 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
                     RequestCreator request = Picasso.with(imageView.getContext())
                             .load(source);
 
-                    if (fit) {
-                        request.fit().centerInside();
+                    switch (fit) {
+                        case CROPCENTER:
+                            request.fit().centerCrop();
+                            break;
+                        case CENTERINSIDE:
+                            request.fit().centerInside();
+                            break;
                     }
 
                     request.into(imageView);
                 } else {
-                    imageView.setImageDrawable(null);
+                    imageView.setImageResource(0);
                 }
             }
         }
