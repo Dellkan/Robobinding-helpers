@@ -64,7 +64,7 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
 
     // Src
     class ImageSrcAttribute implements OneWayMultiTypePropertyViewAttribute<ImageView> {
-        private FIT fit;
+        private FIT fit = FIT.NONE;
 
         public void setFit(FIT fit) {
             this.fit = fit != null ? fit : FIT.NONE;
