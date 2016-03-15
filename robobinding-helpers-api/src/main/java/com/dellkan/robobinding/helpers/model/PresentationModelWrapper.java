@@ -64,7 +64,7 @@ public abstract class PresentationModelWrapper implements IHasPresentationModel 
      */
     public IHasPresentationModel getPresentationModel() {
         initializePresentationModel();
-        return getParentPresentationModel() != null ? getParentPresentationModel() : presentationModel;
+        return presentationModel;
     }
 
     @Override
