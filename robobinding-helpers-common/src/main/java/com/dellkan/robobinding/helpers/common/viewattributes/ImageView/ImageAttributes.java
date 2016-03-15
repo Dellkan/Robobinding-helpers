@@ -19,7 +19,7 @@ import static org.robobinding.attribute.ChildAttributeResolvers.enumChildAttribu
 import static org.robobinding.attribute.ChildAttributeResolvers.propertyAttributeResolver;
 
 public class ImageAttributes implements GroupedViewAttribute<ImageView> {
-    protected enum FIT {
+    public enum FIT {
         NONE, CROPCENTER, CENTERINSIDE;
 
         private final String value;
@@ -51,10 +51,15 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
     @Override
     public void setupChildViewAttributes(ImageView imageView, ChildViewAttributesBuilder<ImageView> childViewAttributesBuilder, BindingContext bindingContext) {
         childViewAttributesBuilder.add("src", srcAttribute = new ImageSrcAttribute());
+        srcAttribute.setFit(getEnumValueForFit(childViewAttributesBuilder));
+    }
+
+    private FIT getEnumValueForFit(ChildViewAttributesBuilder<ImageView> childViewAttributesBuilder) {
         if (childViewAttributesBuilder.hasAttribute("fit")) {
             EnumAttribute<FIT> value = childViewAttributesBuilder.enumAttributeFor("fit");
-            srcAttribute.setFit(value.getValue());
+            return value.getValue();
         }
+        return FIT.NONE;
     }
 
     @Override
@@ -65,6 +70,10 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
     // Src
     class ImageSrcAttribute implements OneWayMultiTypePropertyViewAttribute<ImageView> {
         private FIT fit = FIT.NONE;
+
+        public FIT getFit() {
+            return fit != null ? fit : FIT.NONE;
+        }
 
         public void setFit(FIT fit) {
             this.fit = fit != null ? fit : FIT.NONE;
@@ -89,7 +98,7 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
                 RequestCreator request = Picasso.with(imageView.getContext())
                         .load(source);
 
-                switch (fit) {
+                switch (getFit()) {
                     case CROPCENTER:
                         request.fit().centerCrop();
                         break;
@@ -109,7 +118,7 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
                     RequestCreator request = Picasso.with(imageView.getContext())
                             .load(source);
 
-                    switch (fit) {
+                    switch (getFit()) {
                         case CROPCENTER:
                             request.fit().centerCrop();
                             break;
@@ -130,7 +139,7 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
                     RequestCreator request = Picasso.with(imageView.getContext())
                             .load(source);
 
-                    switch (fit) {
+                    switch (getFit()) {
                         case CROPCENTER:
                             request.fit().centerCrop();
                             break;
