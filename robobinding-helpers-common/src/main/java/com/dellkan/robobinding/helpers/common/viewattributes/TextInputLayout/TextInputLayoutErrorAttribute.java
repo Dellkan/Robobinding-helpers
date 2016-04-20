@@ -49,6 +49,7 @@ public class TextInputLayoutErrorAttribute implements OneWayMultiTypePropertyVie
             if (!mLastError.equals(newValue)) {
                 mLastError = newValue;
                 if (TextUtils.isEmpty(newValue)) {
+                    textInputLayout.setError(null);
                     textInputLayout.setErrorEnabled(false);
                 } else {
                     textInputLayout.setError(newValue);
