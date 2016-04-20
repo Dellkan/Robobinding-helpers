@@ -92,20 +92,26 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
             return null;
         }
 
+        private void setupCropping(RequestCreator request) {
+            switch (getFit()) {
+                case CROPCENTER:
+                    request.centerCrop();
+                    break;
+                case CENTERINSIDE:
+                    request.centerInside();
+                    break;
+            }
+
+            request.fit();
+        }
+
         class UriImageSrcAttribute implements OneWayPropertyViewAttribute<ImageView, Uri> {
             @Override
             public void updateView(ImageView imageView, Uri source) {
                 RequestCreator request = Picasso.with(imageView.getContext())
                         .load(source);
 
-                switch (getFit()) {
-                    case CROPCENTER:
-                        request.fit().centerCrop();
-                        break;
-                    case CENTERINSIDE:
-                        request.fit().centerInside();
-                        break;
-                }
+                setupCropping(request);
 
                 request.into(imageView);
             }
@@ -118,14 +124,7 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
                     RequestCreator request = Picasso.with(imageView.getContext())
                             .load(source);
 
-                    switch (getFit()) {
-                        case CROPCENTER:
-                            request.fit().centerCrop();
-                            break;
-                        case CENTERINSIDE:
-                            request.fit().centerInside();
-                            break;
-                    }
+                    setupCropping(request);
 
                     request.into(imageView);
                 }
@@ -139,18 +138,11 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
                     RequestCreator request = Picasso.with(imageView.getContext())
                             .load(source);
 
-                    switch (getFit()) {
-                        case CROPCENTER:
-                            request.fit().centerCrop();
-                            break;
-                        case CENTERINSIDE:
-                            request.fit().centerInside();
-                            break;
-                    }
+                    setupCropping(request);
 
                     request.into(imageView);
                 } else {
-                    imageView.setImageResource(0);
+                    imageView.setImageDrawable(null);
                 }
             }
         }
