@@ -33,7 +33,9 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
     private WebViewErrorLayoutAttribute errorLayoutAttribute;
     private WebViewAdditionalHeadersAttribute mHeadersAttribute;
     private WebViewRunJavascriptAttribute mRunJavascriptAttribute;
+    private WebViewSourceAttribute mSourceAttribute;
     private boolean mFinishedLoading = false;
+
     @Override
     public String[] getCompulsoryAttributes() {
         return new String[] {"src"};
@@ -63,7 +65,7 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
         if (childViewAttributesBuilder.hasAttribute("runJavascript")) {
             childViewAttributesBuilder.add("runJavascript", mRunJavascriptAttribute = new WebViewRunJavascriptAttribute());
         }
-        childViewAttributesBuilder.add("src", new WebViewSourceAttribute());
+        childViewAttributesBuilder.add("src", mSourceAttribute = new WebViewSourceAttribute());
         if (childViewAttributesBuilder.hasAttribute("errorLayout")) {
             childViewAttributesBuilder.add("errorLayout", errorLayoutAttribute = new WebViewErrorLayoutAttribute(view.getRootView()));
         }
@@ -117,6 +119,8 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
         settings.setUseWideViewPort(true);
         settings.setLoadWithOverviewMode(true);
         settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        settings.setDomStorageEnabled(true);
+        settings.setDatabaseEnabled(true);
     }
 
     // Attribute for error
