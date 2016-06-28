@@ -3,10 +3,7 @@ package com.dellkan.robobinding.helpers.common.viewattributes.WebView;
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.os.Build;
-import android.util.Log;
 import android.view.View;
-import android.webkit.ConsoleMessage;
-import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -55,12 +52,11 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
     }
 
     @Override
-    public void setupChildViewAttributes(WebView view, ChildViewAttributesBuilder<WebView> childViewAttributesBuilder, BindingContext bindingContext) {
+    public void setupChildViewAttributes(WebView view, ChildViewAttributesBuilder<WebView> childViewAttributesBuilder) {
         if (childViewAttributesBuilder.hasAttribute("additionalHeaders")) {
             childViewAttributesBuilder.add("additionalHeaders", mHeadersAttribute = new WebViewAdditionalHeadersAttribute(
                     childViewAttributesBuilder.valueModelAttributeFor("additionalHeaders")
             ));
-            mHeadersAttribute.setInitialHeaders(bindingContext);
         }
         if (childViewAttributesBuilder.hasAttribute("runJavascript")) {
             childViewAttributesBuilder.add("runJavascript", mRunJavascriptAttribute = new WebViewRunJavascriptAttribute());
@@ -75,13 +71,8 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     public void postBind(WebView webView, BindingContext bindingContext) {
-        webView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                Log.d("WebView", consoleMessage.toString());
-                return super.onConsoleMessage(consoleMessage);
-            }
-        });
+        mHeadersAttribute.setInitialHeaders(bindingContext);
+
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {

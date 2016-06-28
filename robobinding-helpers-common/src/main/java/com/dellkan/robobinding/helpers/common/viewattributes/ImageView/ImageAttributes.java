@@ -1,5 +1,6 @@
 package com.dellkan.robobinding.helpers.common.viewattributes.ImageView;
 
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.widget.ImageView;
 
@@ -49,7 +50,7 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
     }
 
     @Override
-    public void setupChildViewAttributes(ImageView imageView, ChildViewAttributesBuilder<ImageView> childViewAttributesBuilder, BindingContext bindingContext) {
+    public void setupChildViewAttributes(ImageView imageView, ChildViewAttributesBuilder<ImageView> childViewAttributesBuilder) {
         childViewAttributesBuilder.add("src", srcAttribute = new ImageSrcAttribute());
         srcAttribute.setFit(getEnumValueForFit(childViewAttributesBuilder));
     }
@@ -81,7 +82,9 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
 
         @Override
         public OneWayPropertyViewAttribute<ImageView, ?> create(ImageView imageView, Class<?> propertyType) {
-            if (Uri.class.isAssignableFrom(propertyType)) {
+            if (Drawable.class.isAssignableFrom(propertyType)) {
+                return new DrawableImageSrcAttribute();
+            } else if (Uri.class.isAssignableFrom(propertyType)) {
                 return new UriImageSrcAttribute();
             } else if (String.class.isAssignableFrom(propertyType)) {
                 return new StringImageSrcAttribute();
@@ -144,6 +147,13 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
                 } else {
                     imageView.setImageDrawable(null);
                 }
+            }
+        }
+
+        class DrawableImageSrcAttribute implements OneWayPropertyViewAttribute<ImageView, Drawable> {
+            @Override
+            public void updateView(ImageView view, Drawable newValue) {
+                view.setImageDrawable(newValue);
             }
         }
     }
