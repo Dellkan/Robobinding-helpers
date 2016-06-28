@@ -10,13 +10,17 @@ import android.webkit.WebViewClient;
 
 import org.robobinding.BindingContext;
 import org.robobinding.attribute.ChildAttributeResolverMappings;
+import org.robobinding.attribute.Command;
 import org.robobinding.attribute.ResolvedGroupAttributes;
 import org.robobinding.attribute.StaticResourceAttribute;
 import org.robobinding.attribute.ValueModelAttribute;
+import org.robobinding.viewattribute.event.EventViewAttribute;
 import org.robobinding.viewattribute.grouped.ChildViewAttributeWithAttribute;
 import org.robobinding.viewattribute.grouped.ChildViewAttributesBuilder;
 import org.robobinding.viewattribute.grouped.GroupedViewAttribute;
 import org.robobinding.viewattribute.property.OneWayPropertyViewAttribute;
+import org.robobinding.widget.view.AbstractViewEvent;
+import org.robobinding.widgetaddon.view.ViewAddOnForView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +37,9 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
     private WebViewSourceAttribute mSourceAttribute;
     private boolean mFinishedLoading = false;
 
+    // For onLoaded event - doesn't work currently
+    private WebViewOnLoadedEvent mOnLoadedEvent;
+
     @Override
     public String[] getCompulsoryAttributes() {
         return new String[] {"src"};
@@ -44,6 +51,10 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
         resolverMappings.map(propertyAttributeResolver(), "src");
         resolverMappings.map(propertyAttributeResolver(), "runJavascript");
         resolverMappings.map(staticResourceAttributeResolver(), "errorLayout");
+
+        // Add mapping for onLoaded event type - does not currently work
+        // FIXME: Not sure propertyAttributeResolver is/would be correct type for event attributes
+        resolverMappings.map(propertyAttributeResolver(), "onLoaded");
     }
 
     @Override
@@ -65,6 +76,12 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
         if (childViewAttributesBuilder.hasAttribute("errorLayout")) {
             childViewAttributesBuilder.add("errorLayout", errorLayoutAttribute = new WebViewErrorLayoutAttribute(view.getRootView()));
         }
+
+        // Onloaded event
+        if (childViewAttributesBuilder.hasAttribute("onLoaded")) {
+            // This line causes issues, because childViewAttributesBuilder.add does not support EventViewAttribute
+            childViewAttributesBuilder.add("onLoaded", mOnLoadedEvent = new WebViewOnLoadedEvent());
+        }
     }
 
     private List<String> runJavascriptQueue = new ArrayList<>();
@@ -84,6 +101,11 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 mFinishedLoading = true;
+
+                // Trigger our onLoaded event - currently not working
+                mOnLoadedEvent.triggerEvent(view, url);
+
+
                 if (mRunJavascriptAttribute != null) {
                     for (String script : runJavascriptQueue) {
                         mRunJavascriptAttribute.updateView(view, script);
@@ -177,6 +199,7 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
         }
     }
 
+    // Attribute for running javascript
     private class WebViewRunJavascriptAttribute implements OneWayPropertyViewAttribute<WebView, String> {
         @Override
         public void updateView(WebView view, String newValue) {
@@ -204,6 +227,36 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
             if (errorLayoutAttribute != null) {
                 webView.setVisibility(View.VISIBLE);
                 errorLayoutAttribute.getView().setVisibility(View.GONE);
+            }
+        }
+    }
+
+    // Attribute for onLoaded event - does not currently work, because GroupedAttribute does not support Event types
+    private class WebViewOnLoadedEvent implements EventViewAttribute<WebView, ViewAddOnForView> {
+        private Command command;
+        @Override
+        public void bind(ViewAddOnForView viewAddOnForView, Command command, WebView webView) {
+            this.command = command;
+        }
+
+        public void triggerEvent(WebView webView, String url) {
+            this.command.invoke(new OnLoadedEvent(webView, url));
+        }
+
+        @Override
+        public Class<?> getEventType() {
+            return OnLoadedEvent.class;
+        }
+
+        public class OnLoadedEvent extends AbstractViewEvent {
+            private String url;
+            protected OnLoadedEvent(View view, String url) {
+                super(view);
+                this.url = url;
+            }
+
+            public String getUrl() {
+                return url;
             }
         }
     }
