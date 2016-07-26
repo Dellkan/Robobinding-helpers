@@ -2,7 +2,7 @@
     <#if item.twoState>
     <#assign methodName>is${item.name}Active</#assign>
     <#if !item.methodExists(methodName)>
-    <#list item.dependsOn>@DependsOnStateOf({<#items as dependency>"${dependency}"<#sep>,</#items>})</#list>
+    @DependsOnStateOf({"${item.name?uncap_first}"<#list item.dependsOn as dependency>, "${dependency}"</#list>})
     public boolean ${methodName}() {
         return (Boolean)${item.accessor} != null ? ${item.accessor} : false;
     }
@@ -10,7 +10,7 @@
 
     <#assign methodName>is${item.name}Inactive</#assign>
     <#if !item.methodExists(methodName)>
-    <#list item.dependsOn>@DependsOnStateOf({<#items as dependency>"${dependency}"<#sep>,</#items>})</#list>
+    @DependsOnStateOf({"${item.name?uncap_first}"<#list item.dependsOn as dependency>, "${dependency}"</#list>})
     public boolean ${methodName}() {
         return (Boolean)${item.accessor} != null ? !${item.accessor} : true;
     }

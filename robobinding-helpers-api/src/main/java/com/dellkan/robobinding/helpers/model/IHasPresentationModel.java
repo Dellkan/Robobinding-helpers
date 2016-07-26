@@ -20,7 +20,7 @@ public interface IHasPresentationModel extends IHasValidation {
      * Will fire onPropertyChange for a single named field. The field must be marked with {@link com.dellkan.robobinding.helpers.modelgen.GetSet GetSet} to be detected
      * @param field Field to refresh
      */
-    public void refresh(String field);
+    public void refresh(String... field);
 
     /**
      * Collects data from every method or field marked with the {@link AddToData AddToData} annotation

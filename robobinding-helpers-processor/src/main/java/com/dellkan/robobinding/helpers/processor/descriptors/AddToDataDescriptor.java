@@ -2,9 +2,7 @@ package com.dellkan.robobinding.helpers.processor.descriptors;
 
 import com.dellkan.robobinding.helpers.modelgen.AddToData;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -56,7 +54,7 @@ public class AddToDataDescriptor extends Descriptor {
             String name = methodPrefix + getPrefix() + fieldName;
             return name.substring(0, 1).toLowerCase() + name.substring(1);
         } else if (getField().getKind().equals(ElementKind.FIELD)) {
-            if (!annotation.alternativeDataFormatter().isEmpty() && methodExists(getPrefix() + annotation.alternativeDataFormatter())) {
+            if (!annotation.alternativeDataFormatter().isEmpty()) {
                 return "this.data." + getClassPrefix() + annotation.alternativeDataFormatter();
             }
             if (isListContainer()) {

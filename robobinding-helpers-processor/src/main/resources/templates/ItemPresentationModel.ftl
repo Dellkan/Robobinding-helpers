@@ -53,8 +53,10 @@ public class ${className}$$ItemHelper implements IHasPresentationModel, ItemPres
         this.changeHandler.refreshPresentationModel();
     }
 
-    public void refresh(String field) {
-        this.changeHandler.firePropertyChange(field);
+    public void refresh(String... fields) {
+        for (String field : fields) {
+            this.changeHandler.firePropertyChange(field);
+        }
     }
 
     @Override
