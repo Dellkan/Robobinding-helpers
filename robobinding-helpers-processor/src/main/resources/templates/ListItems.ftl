@@ -45,3 +45,10 @@
         this.changeHandler.firePropertyChange("${item.name?uncap_first}SelectedPosition");
     }
     </#if>
+
+    <#assign methodName>is${item.name}Empty</#assign>
+    <#if !item.methodExists(methodName)>
+    public boolean ${methodName}() {
+        return ${item.accessor}.size() == 0;
+    }
+    </#if>
