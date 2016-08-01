@@ -21,7 +21,7 @@ import static org.robobinding.attribute.ChildAttributeResolvers.propertyAttribut
 
 public class ImageAttributes implements GroupedViewAttribute<ImageView> {
     public enum FIT {
-        NONE, CROPCENTER, CENTERINSIDE;
+        NONE, CROPCENTER, CENTERCROP, CENTERINSIDE;
 
         private final String value;
         private FIT() {
@@ -97,6 +97,7 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
 
         private void setupCropping(RequestCreator request) {
             switch (getFit()) {
+                case CENTERCROP:
                 case CROPCENTER:
                     request.centerCrop();
                     break;
