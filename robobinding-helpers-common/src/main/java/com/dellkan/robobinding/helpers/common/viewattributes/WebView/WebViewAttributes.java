@@ -9,8 +9,12 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import org.robobinding.BindingContext;
+import org.robobinding.attribute.AbstractAttribute;
+import org.robobinding.attribute.ChildAttributeResolver;
 import org.robobinding.attribute.ChildAttributeResolverMappings;
 import org.robobinding.attribute.Command;
+import org.robobinding.attribute.EventAttribute;
+import org.robobinding.attribute.PropertyAttributeParser;
 import org.robobinding.attribute.ResolvedGroupAttributes;
 import org.robobinding.attribute.StaticResourceAttribute;
 import org.robobinding.attribute.ValueModelAttribute;
@@ -54,7 +58,7 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
 
         // Add mapping for onLoaded event type - does not currently work
         // FIXME: Not sure propertyAttributeResolver is/would be correct type for event attributes
-        resolverMappings.map(propertyAttributeResolver(), "onLoaded");
+        resolverMappings.map(new EventAttributeResolver(), "onLoaded");
     }
 
     @Override
@@ -102,7 +106,7 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
                 super.onPageFinished(view, url);
                 mFinishedLoading = true;
 
-                // Trigger our onLoaded event - currently not working
+                // Trigger our onLoaded event
                 mOnLoadedEvent.triggerEvent(view, url);
 
 
@@ -259,5 +263,15 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
                 return url;
             }
         }
+    }
+
+    static class EventAttributeResolver implements ChildAttributeResolver {
+        private PropertyAttributeParser propertyAttributeParser = new PropertyAttributeParser();
+
+        @Override
+        public AbstractAttribute resolveChildAttribute(String attribute, String attributeValue) {
+            return new EventAttribute(attribute, attributeValue);
+        }
+
     }
 }

@@ -33,7 +33,7 @@ repositories {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
-    compile('org.robobinding:robobinding:0.8.14:with-aop-and-dependencies')
+    compile('org.robobinding:robobinding:0.8.15-SNAPSHOT:with-aop-and-dependencies')
     apt "org.robobinding:codegen:0.8.14"
 
     compile 'com.android.support:appcompat-v7:23.2.1'
