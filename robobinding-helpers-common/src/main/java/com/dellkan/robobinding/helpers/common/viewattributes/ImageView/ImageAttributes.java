@@ -50,7 +50,7 @@ public class ImageAttributes implements GroupedViewAttribute<ImageView> {
     }
 
     @Override
-    public void setupChildViewAttributes(ImageView imageView, ChildViewAttributesBuilder<ImageView> childViewAttributesBuilder) {
+    public void setupChildViewAttributes(ImageView imageView, ChildViewAttributesBuilder<ImageView> childViewAttributesBuilder, BindingContext bindingContext) {
         childViewAttributesBuilder.add("src", srcAttribute = new ImageSrcAttribute());
         srcAttribute.setFit(getEnumValueForFit(childViewAttributesBuilder));
     }

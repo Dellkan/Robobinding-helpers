@@ -67,7 +67,7 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
     }
 
     @Override
-    public void setupChildViewAttributes(WebView view, ChildViewAttributesBuilder<WebView> childViewAttributesBuilder) {
+    public void setupChildViewAttributes(WebView view, ChildViewAttributesBuilder<WebView> childViewAttributesBuilder, BindingContext bindingContext) {
         if (childViewAttributesBuilder.hasAttribute("additionalHeaders")) {
             childViewAttributesBuilder.add("additionalHeaders", mHeadersAttribute = new WebViewAdditionalHeadersAttribute(
                     childViewAttributesBuilder.valueModelAttributeFor("additionalHeaders")
@@ -84,7 +84,7 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
         // Onloaded event
         if (childViewAttributesBuilder.hasAttribute("onLoaded")) {
             // This line causes issues, because childViewAttributesBuilder.add does not support EventViewAttribute
-            childViewAttributesBuilder.add("onLoaded", mOnLoadedEvent = new WebViewOnLoadedEvent());
+            // childViewAttributesBuilder.add("onLoaded", mOnLoadedEvent = new WebViewOnLoadedEvent());
         }
     }
 
@@ -107,7 +107,9 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
                 mFinishedLoading = true;
 
                 // Trigger our onLoaded event
-                mOnLoadedEvent.triggerEvent(view, url);
+                if (mOnLoadedEvent != null) {
+                    mOnLoadedEvent.triggerEvent(view, url);
+                }
 
 
                 if (mRunJavascriptAttribute != null) {
