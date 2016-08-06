@@ -39,6 +39,7 @@ import com.dellkan.robobinding.helpers.validation.validators.ValidateRange;
 import com.dellkan.robobinding.helpers.validation.validators.ValidateSelected;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -147,6 +148,13 @@ public class Processor extends AbstractProcessor {
 
         // Descriptors
         for (Element element : elements) {
+
+            // Check whether the element has serialize enabled. Missing serializable is a very common mistake
+            TypeMirror serializableType = processingEnv.getElementUtils().getTypeElement(Serializable.class.getCanonicalName()).asType();
+            if (!processingEnv.getTypeUtils().isAssignable(element.asType(), serializableType)) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, "Missing Serializable interface", element);
+            }
+
             if (!descriptors.containsKey(element)) {
                 // Create an empty descriptor
                 ModelDescriptor descriptor = new ModelDescriptor(element, messager);
@@ -365,7 +373,6 @@ public class Processor extends AbstractProcessor {
                                                 )
                                         )
                                 ));
-                                break;
                             }
                         }
                     }
