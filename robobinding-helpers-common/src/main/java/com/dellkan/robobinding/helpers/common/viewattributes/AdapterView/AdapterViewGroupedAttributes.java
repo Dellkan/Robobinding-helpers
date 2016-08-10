@@ -30,7 +30,7 @@ public class AdapterViewGroupedAttributes implements GroupedViewAttribute<Adapte
 	}
 
 	@Override
-	public void setupChildViewAttributes(AdapterView adapterView, ChildViewAttributesBuilder<AdapterView> childViewAttributesBuilder, BindingContext bindingContext) {
+	public void setupChildViewAttributes(AdapterView adapterView, ChildViewAttributesBuilder<AdapterView> childViewAttributesBuilder) {
 		childViewAttributesBuilder.add("emptyView", new AdapterViewEmptyViewAttribute(adapterView));
 	}
 
