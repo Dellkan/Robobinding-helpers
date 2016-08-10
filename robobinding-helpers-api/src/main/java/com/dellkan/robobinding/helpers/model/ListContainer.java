@@ -7,14 +7,18 @@ import java.util.List;
 
 public class ListContainer<T> implements Serializable {
     private List<T> items = new ArrayList<>();
-    private T selectedItem = null;
 
     public T getSelectedItem() {
-        return selectedItem;
+        return items.get(getSelectedPosition());
     }
 
     public void setSelectedItem(T selectedItem) {
-        this.selectedItem = selectedItem;
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).equals(selectedItem)) {
+                setSelectedPosition(i);
+                break;
+            }
+        }
     }
 
     private int selectedPosition = 0;
@@ -24,7 +28,6 @@ public class ListContainer<T> implements Serializable {
 
     public void setSelectedPosition(int position) {
         selectedPosition = position;
-        setSelectedItem(getItem(position));
     }
 
     public List<T> getItems() {
