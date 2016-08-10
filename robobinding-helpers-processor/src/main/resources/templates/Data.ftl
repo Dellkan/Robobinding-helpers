@@ -34,9 +34,9 @@
                 </#list>
                 <#if item.conditional>
                 if (${item.conditionalMethod}()) {
-                    child.put("${item.dataName}", ${item.dataAccessor}());
+                    child.put("${item.dataName}", ${item.dataAccessor});
                 }<#else>
-                child.put("${item.dataName}", ${item.dataAccessor}());
+                child.put("${item.dataName}", ${item.dataAccessor});
 
                 </#if></#if></#list><#sep>break;
             </#list>

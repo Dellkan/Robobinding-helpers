@@ -52,27 +52,15 @@ public class AddToDataDescriptor extends Descriptor {
                 fieldName = fieldName.substring(3);
             }
             String name = methodPrefix + getPrefix() + fieldName;
-            return name.substring(0, 1).toLowerCase() + name.substring(1);
+            return name.substring(0, 1).toLowerCase() + name.substring(1) + "()";
         } else if (getField().getKind().equals(ElementKind.FIELD)) {
             if (!annotation.alternativeDataFormatter().isEmpty()) {
-                return "this.data." + getClassPrefix() + annotation.alternativeDataFormatter();
+                return "this.data." + getClassPrefix() + annotation.alternativeDataFormatter() + "()";
             }
             if (isListContainer()) {
-                return "getListContainerData" + getName().substring(0, 1).toUpperCase() + getName().substring(1);
+                return "getListContainerData" + getName().substring(0, 1).toUpperCase() + getName().substring(1) + "()";
             }
-            for (MethodDescriptor method : modelDescriptor.getMethods()) {
-                if (method.getName().equalsIgnoreCase("get" + getName())) {
-                    return method.getName();
-                }
-            }
-            for (GetSetDescriptor accessor : modelDescriptor.getAccessors()) {
-                if (accessor.isGetter() && accessor.getName().equals(getName())) {
-                    if (accessor.isTwoState() || accessor.isBoolean()) {
-                        return "is" + getName().substring(0, 1).toUpperCase() + getName().substring(1);
-                    }
-                    return "get" + getName().substring(0, 1).toUpperCase() + getName().substring(1);
-                }
-            }
+            return getAccessor();
         }
         this.modelDescriptor.getMessager().printMessage(Diagnostic.Kind.WARNING, "[AddToData Accessor failed!] Looking for " + getName() + " (prefix: " + getPrefix() + "). This is " + this.modelDescriptor.getModel().getSimpleName().toString());
         return "";
