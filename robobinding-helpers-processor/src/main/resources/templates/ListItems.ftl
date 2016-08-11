@@ -52,3 +52,10 @@
         return ${item.accessor}.size() == 0;
     }
     </#if>
+
+    <#assign methodName>is${item.name}NotEmpty</#assign>
+    <#if !item.methodExists(methodName)>
+    public boolean ${methodName}() {
+        return ${item.accessor}.size() != 0;
+    }
+    </#if>
