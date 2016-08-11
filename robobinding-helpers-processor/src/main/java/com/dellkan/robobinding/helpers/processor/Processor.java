@@ -8,6 +8,7 @@ import com.dellkan.robobinding.helpers.modelgen.GetSet;
 import com.dellkan.robobinding.helpers.modelgen.IncludeModel;
 import com.dellkan.robobinding.helpers.modelgen.ItemPresentationModel;
 import com.dellkan.robobinding.helpers.modelgen.ListItems;
+import com.dellkan.robobinding.helpers.modelgen.PresentationMethod;
 import com.dellkan.robobinding.helpers.modelgen.PresentationModel;
 import com.dellkan.robobinding.helpers.modelgen.SkipMethod;
 import com.dellkan.robobinding.helpers.modelgen.TwoStateGetSet;
@@ -324,7 +325,13 @@ public class Processor extends AbstractProcessor {
         for (Element child : descriptor.getModel().getEnclosedElements()) {
             // Create list of existing methods
             if (child.getKind() == ElementKind.METHOD && !child.getModifiers().contains(Modifier.PRIVATE)) {
+                // TODO: Remove @SkipMethod, and warning below when related projects are stabilized
                 if (child.getAnnotation(SkipMethod.class) != null) {
+                    continue;
+                }
+
+                if (child.getAnnotation(PresentationMethod.class) == null) {
+                    messager.printMessage(Diagnostic.Kind.WARNING, "Skipping unannotated method " + child.getSimpleName(), child);
                     continue;
                 }
 

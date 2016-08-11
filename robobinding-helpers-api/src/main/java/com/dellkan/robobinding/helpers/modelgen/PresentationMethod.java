@@ -7,12 +7,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @deprecated Simply omit annotation on methods instead.
- * Previously, builds would assume all methods should be included unless skipped.
- * New builds will assume no methods should be included unless explicitly included using {@link PresentationMethod}
+ * Mark a method on your {@link PresentationModel} to get a corresponding method in the {@link PresentationModel} for it.
+ * This also supports static methods
  */
 @Documented
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.METHOD)
-public @interface SkipMethod {
+public @interface PresentationMethod {
 }
