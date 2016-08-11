@@ -6,9 +6,12 @@ import com.dellkan.robobinding.helpers.processor.Util;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
+import javax.tools.Diagnostic;
 
 /**
  * Used by freemarker, during compile-time annotation processing.
@@ -69,6 +72,14 @@ public class MethodDescriptor extends Descriptor {
 
     public ExecutableElement getMethod() {
         return (ExecutableElement) getField();
+    }
+
+    @Override
+    public String getAccessor() {
+        if (getField().getModifiers().contains(Modifier.STATIC)) {
+            return String.format("%s.%s", Util.typeToString(getMethod().getEnclosingElement().asType()), getField().getSimpleName().toString());
+        }
+        return super.getAccessor();
     }
 
     public static class Param {

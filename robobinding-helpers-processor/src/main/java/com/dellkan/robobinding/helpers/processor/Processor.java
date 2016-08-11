@@ -327,10 +327,6 @@ public class Processor extends AbstractProcessor {
                 if (child.getAnnotation(SkipMethod.class) != null) {
                     continue;
                 }
-                // TODO: Allow static
-                if (child.getModifiers().contains(Modifier.STATIC)) {
-                    continue;
-                }
 
                 Validate validateAnnotation = child.getAnnotation(Validate.class);
                 if (validateAnnotation != null) {
