@@ -27,6 +27,7 @@ import com.dellkan.robobinding.helpers.validation.processors.ValidateLengthProce
 import com.dellkan.robobinding.helpers.validation.processors.ValidateListProcessor;
 import com.dellkan.robobinding.helpers.validation.processors.ValidatePatternProcessor;
 import com.dellkan.robobinding.helpers.validation.processors.ValidateSelectedProcessor;
+import com.dellkan.robobinding.helpers.validation.validators.Validate;
 import com.dellkan.robobinding.helpers.validation.validators.ValidateBoolean;
 import com.dellkan.robobinding.helpers.validation.validators.ValidateLengthMax;
 import com.dellkan.robobinding.helpers.validation.validators.ValidateLengthMin;
@@ -128,6 +129,7 @@ public class Processor extends AbstractProcessor {
             }
         }
         // Add premade validators
+        addCustomValidator(ValidationProcessor.class, Validate.class);
         addCustomValidator(ValidateBooleanProcessor.class, ValidateBoolean.class);
         addCustomValidator(ValidatePatternProcessor.class, ValidatePattern.class);
         addCustomValidator(ValidateLengthProcessor.class,
@@ -157,7 +159,7 @@ public class Processor extends AbstractProcessor {
 
             if (!descriptors.containsKey(element)) {
                 // Create an empty descriptor
-                ModelDescriptor descriptor = new ModelDescriptor(element, messager);
+                ModelDescriptor descriptor = new ModelDescriptor(element, messager, processingEnv);
 
                 // Add it to the global list
                 descriptors.put(element, descriptor);
@@ -245,7 +247,10 @@ public class Processor extends AbstractProcessor {
         for (Class<? extends Annotation> annotationClass : annotations) {
             annotationClasses.add(annotationClass.getCanonicalName());
         }
-        customValidators.put(processingEnv.getElementUtils().getTypeElement(processor.getCanonicalName()), annotationClasses);
+        customValidators.put(
+                processor != null ? processingEnv.getElementUtils().getTypeElement(processor.getCanonicalName()) : null,
+                annotationClasses
+        );
     }
 
     private void flattenStructure(ModelDescriptor child, ModelDescriptor parent, IncludeModelDescriptor includeDescriptor) {
@@ -293,7 +298,7 @@ public class Processor extends AbstractProcessor {
             // Add validators
             for (ValidateDescriptor item : child.getValidators()) {
                 if (!includeDescriptor.shouldSkipField(item.getName())) {
-                    ValidateDescriptor proxy = new ValidateDescriptor(parent, item.getField(), item.getAnnotationType(), item.getProcessor(), item.getValidateIfAnnotation(), item.getValidateIfValueAnnotation(), item.getIsList());
+                    ValidateDescriptor proxy = new ValidateDescriptor(parent, item.getField(), item.getAnnotationType(), item.getProcessor());
                     proxy.setClassPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + item.getClassPrefix());
                     proxy.setPrefixes(item.getPrefixes());
                     proxy.addPrefix(includeDescriptor.getPrefix());
@@ -318,17 +323,28 @@ public class Processor extends AbstractProcessor {
     private void traverseChildren(ModelDescriptor descriptor) {
         for (Element child : descriptor.getModel().getEnclosedElements()) {
             // Create list of existing methods
-            if (child.getKind() == ElementKind.METHOD && child.getModifiers().contains(Modifier.PUBLIC)) {
+            if (child.getKind() == ElementKind.METHOD && !child.getModifiers().contains(Modifier.PRIVATE)) {
                 if (child.getAnnotation(SkipMethod.class) != null) {
                     continue;
                 }
+                // TODO: Allow static
                 if (child.getModifiers().contains(Modifier.STATIC)) {
                     continue;
                 }
-                ExecutableElement method = (ExecutableElement) child;
-                DependsOnStateOf annotation = child.getAnnotation(DependsOnStateOf.class);
 
-                descriptor.getMethods().add(new MethodDescriptor(descriptor, method, annotation));
+                Validate validateAnnotation = child.getAnnotation(Validate.class);
+                if (validateAnnotation != null) {
+                    descriptor.getValidators().add(new ValidateDescriptor(
+                            descriptor,
+                            child,
+                            Validate.class.getCanonicalName(),
+                            null
+                    ));
+                } else {
+                    ExecutableElement method = (ExecutableElement) child;
+                    DependsOnStateOf annotation = child.getAnnotation(DependsOnStateOf.class);
+                    descriptor.getMethods().add(new MethodDescriptor(descriptor, method, annotation));
+                }
             }
 
             // Create list of getters, setters
@@ -362,16 +378,7 @@ public class Processor extends AbstractProcessor {
                                         descriptor,
                                         child,
                                         annotationClass,
-                                        markerAnnotation.getKey(),
-                                        child.getAnnotation(ValidateIf.class),
-                                        child.getAnnotation(ValidateIfValue.class),
-                                        processingEnv.getTypeUtils().isAssignable(
-                                                child.asType(),
-                                                processingEnv.getTypeUtils().getDeclaredType(
-                                                        processingEnv.getElementUtils().getTypeElement(ListContainer.class.getCanonicalName()),
-                                                        processingEnv.getTypeUtils().getWildcardType(null, null)
-                                                )
-                                        )
+                                        markerAnnotation.getKey()
                                 ));
                             }
                         }

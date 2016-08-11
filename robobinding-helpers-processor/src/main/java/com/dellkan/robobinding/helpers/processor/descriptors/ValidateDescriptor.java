@@ -1,14 +1,20 @@
 package com.dellkan.robobinding.helpers.processor.descriptors;
 
+import com.dellkan.robobinding.helpers.model.ListContainer;
 import com.dellkan.robobinding.helpers.processor.Util;
 import com.dellkan.robobinding.helpers.validation.ValidateIf;
 import com.dellkan.robobinding.helpers.validation.ValidateIfValue;
+import com.dellkan.robobinding.helpers.validation.validators.Validate;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
 
 /**
  * Used by freemarker, during compile-time annotation processing.
@@ -16,19 +22,44 @@ import javax.lang.model.element.TypeElement;
  * and {@link com.dellkan.robobinding.helpers.validation.ValidateType ValidateType}.
  */
 public class ValidateDescriptor extends Descriptor {
-    private String annotation;
+    private String annotationClass;
     private TypeElement processor;
     private ValidateIf validateIf;
     private ValidateIfValue validateIfValue;
     private boolean isList;
 
-    public ValidateDescriptor(ModelDescriptor modelDescriptor, Element field, String annotation, TypeElement processor, ValidateIf validateIf, ValidateIfValue validateIfValue, boolean isList) {
+    private Validate methodAnnotation;
+    private boolean isMethodValidation;
+
+    public ValidateDescriptor(ModelDescriptor modelDescriptor, Element field, String annotationClass, TypeElement processor) {
         super(modelDescriptor, field);
-        this.annotation = annotation;
+        this.annotationClass = annotationClass;
         this.processor = processor;
-        this.validateIf = validateIf;
-        this.validateIfValue = validateIfValue;
-        this.isList = isList;
+        this.validateIf = field.getAnnotation(ValidateIf.class);
+        this.validateIfValue = field.getAnnotation(ValidateIfValue.class);
+
+        ProcessingEnvironment processingEnv = modelDescriptor.getProcessingEnvironment();
+        Types typeUtils = processingEnv.getTypeUtils();
+        this.isMethodValidation = getField().getKind().equals(ElementKind.METHOD);
+
+        if (this.isMethodValidation) {
+            methodAnnotation = getField().getAnnotation(Validate.class);
+            if (this.methodAnnotation == null) {
+                modelDescriptor.getMessager().printMessage(Diagnostic.Kind.ERROR, "Could not retrieve method validation annotation");
+            }
+        } else {
+            this.isList = typeUtils.isAssignable(
+                    field.asType(),
+                    typeUtils.getDeclaredType(
+                            processingEnv.getElementUtils().getTypeElement(ListContainer.class.getCanonicalName()),
+                            typeUtils.getWildcardType(null, null)
+                    )
+            );
+        }
+
+        if (!this.isMethodValidation && this.processor == null) {
+            modelDescriptor.getMessager().printMessage(Diagnostic.Kind.ERROR, "processor null on a non-methodValidation");
+        }
     }
 
     public String getProcessorType() {
@@ -40,7 +71,7 @@ public class ValidateDescriptor extends Descriptor {
     }
 
     public String getAnnotationType() {
-        return annotation;
+        return annotationClass;
     }
 
     public String getAccessorClass() {
@@ -124,5 +155,62 @@ public class ValidateDescriptor extends Descriptor {
 
     public boolean isString() {
         return getType().equals("java.lang.String");
+    }
+
+    public int getMethodError() {
+        if (isMethodValidation() && methodAnnotation != null) {
+            return methodAnnotation.error();
+        } else {
+            return 0;
+        }
+    }
+
+    public String getValidationNameValid() {
+        StringBuilder builder = new StringBuilder();
+        if (isMethodValidation) {
+            if (!getName().startsWith("is")) {
+                builder.append("is");
+            }
+            builder.append(getName());
+            if (!getName().endsWith("Valid")) {
+                builder.append("Valid");
+            }
+        } else {
+            builder.append("is").append(getName()).append("Valid");
+        }
+        return builder.toString();
+    }
+
+    public String getValidationNameInvalid() {
+        StringBuilder builder = new StringBuilder();
+        if (isMethodValidation) {
+            if (!getName().startsWith("is")) {
+                builder.append("is");
+            }
+            if (getName().endsWith("Valid")) {
+                builder.append(getName().substring(0, getName().length() - "Valid".length()));
+            } else {
+                builder.append(getName());
+            }
+            if (!getName().endsWith("Invalid")) {
+                builder.append("Invalid");
+            }
+        } else {
+            builder.append("is").append(getName()).append("Invalid");
+        }
+        return builder.toString();
+    }
+
+    public boolean isMethodValidation() {
+        return isMethodValidation;
+    }
+
+    public boolean selfDependencyNecessary(String dependency) {
+        if (isMethodValidation()) {
+            if (getName().equalsIgnoreCase(dependency)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

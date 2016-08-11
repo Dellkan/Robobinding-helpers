@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.annotation.processing.Messager;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 
 public class ModelDescriptor {
@@ -19,10 +20,12 @@ public class ModelDescriptor {
     private List<IncludeModelDescriptor> includeItems = new ArrayList<>();
     private boolean writtenToFile = false;
     private Messager messager;
+    private ProcessingEnvironment processingEnvironment;
 
-    public ModelDescriptor(Element model, Messager messager) {
+    public ModelDescriptor(Element model, Messager messager, ProcessingEnvironment processingEnvironment) {
         this.setModel(model);
         this.setMessager(messager);
+        this.setProcessingEnvironment(processingEnvironment);
     }
 
     public boolean methodExists(String methodName) {
@@ -105,6 +108,14 @@ public class ModelDescriptor {
 
     public void setMessager(Messager messager) {
         this.messager = messager;
+    }
+
+    public ProcessingEnvironment getProcessingEnvironment() {
+        return processingEnvironment;
+    }
+
+    public void setProcessingEnvironment(ProcessingEnvironment processingEnvironment) {
+        this.processingEnvironment = processingEnvironment;
     }
 
     public List<String> getDataGroups() {

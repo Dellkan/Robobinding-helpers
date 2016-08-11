@@ -1,11 +1,15 @@
 <#list validators as item>
 
+    <#if !item.methodValidation>
     private ValidationProcessor ${item.name?uncap_first}ErrorProcessor;
+    </#if>
 
-    <#assign methodName>is${item.name}Valid</#assign>
-    <#if !item.methodExists(methodName)>
-    @DependsOnStateOf({<#list item.dependsOn as dependency>"${dependency}"<#sep>, </#list>})
-    public boolean ${methodName}() {
+    <#if !item.methodExists(item.validationNameValid)>
+    @DependsOnStateOf({<#list item.dependsOn as dependency>
+        <#if item.selfDependencyNecessary(dependency)>"${dependency}"</#if><#sep>,</#list>
+    })
+    public boolean ${item.validationNameValid}() {
+        <#if !item.methodValidation>
         if (this.${item.name?uncap_first}ErrorProcessor == null) {
             try {
                 Annotation annotation = ${item.accessorClass}.getClass().getDeclaredField("${item.fieldName}").getAnnotation(${item.annotationType}.class);
@@ -15,6 +19,7 @@
             }
         }
         if (this.${item.name?uncap_first}ErrorProcessor != null) {
+        </#if>
             boolean skipCheck = false;
             <#if item.hasValidateIf>
             skipCheck = !${item.validateIf}();
@@ -30,17 +35,20 @@
             skipCheck = ${item.accessor} == null;
             </#if>
             </#if>
+            <#if item.methodValidation>
+            return skipCheck || ${item.accessor}();
+            <#else>
             return skipCheck || this.${item.name?uncap_first}ErrorProcessor.isValid(${item.accessor});
         }
         return false;
+        </#if>
     }
     </#if>
 
-    <#assign methodName>is${item.name}Invalid</#assign>
-    <#if !item.methodExists(methodName)>
+    <#if !item.methodExists(item.validationNameInvalid)>
     @DependsOnStateOf({<#list item.dependsOn as dependency>"${dependency}"<#sep>, </#list>})
-    public boolean ${methodName}() {
-        return !is${item.name}Valid();
+    public boolean ${item.validationNameInvalid}() {
+        return !${item.validationNameValid}();
     }
     </#if>
 
@@ -48,6 +56,7 @@
     <#if !item.methodExists(methodName)>
     @DependsOnStateOf({<#list item.dependsOn as dependency>"${dependency}"<#sep>, </#list>})
     public int ${methodName}() {
+        <#if !item.methodValidation>
         if (this.${item.name?uncap_first}ErrorProcessor == null) {
             try {
                 Annotation annotation = ${item.accessorClass}.getClass().getDeclaredField("${item.fieldName}").getAnnotation(${item.annotationType}.class);
@@ -62,6 +71,9 @@
             }
         }
         return 0;
+        <#else>
+        return ${item.methodError};
+        </#if>
     }
     </#if>
 </#list>
@@ -70,7 +82,7 @@
         switch(field.toLowerCase()) {
             <#list validators as item>
             case "${item.name?lower_case}":
-                return is${item.name}Valid();
+                return ${item.validationNameValid}();
             </#list>
             default:
                 return false;
@@ -79,11 +91,8 @@
 
     <#list validators>@DependsOnStateOf({<#items as item><#list item.dependsOn as dependency>"${dependency}"<#sep>, </#list><#sep>, </#items>})</#list>
     public boolean isValid() {
-        return <#list validators as item>
-            <#if item.hasValidateIf>
-            ((!${item.validateIf}()) || (${item.validateIf}() && is${item.name}Valid()))
-            <#else>is${item.name}Valid()
-            </#if><#sep> &&
+        return <#list validators as item><#if item.hasValidateIf>
+            ((!${item.validateIf}()) || (${item.validateIf}() && ${item.validationNameValid}()))<#else>${item.validationNameValid}()</#if><#sep> &&
             <#else>true
         </#list>;
     }
@@ -102,7 +111,7 @@
     public java.util.Map<String, Integer> getErrors() {
         java.util.Map<String, Integer> errors = new java.util.HashMap<>();
         <#list validators as item>
-            if (!is${item.name}Valid()) {
+            if (!${item.validationNameValid}()) {
                 errors.put("${item.name}", get${item.name}Error());
             }
         </#list>
