@@ -74,14 +74,6 @@ public class MethodDescriptor extends Descriptor {
         return (ExecutableElement) getField();
     }
 
-    @Override
-    public String getAccessor() {
-        if (getField().getModifiers().contains(Modifier.STATIC)) {
-            return String.format("%s.%s", Util.typeToString(getMethod().getEnclosingElement().asType()), getField().getSimpleName().toString());
-        }
-        return super.getAccessor();
-    }
-
     public static class Param {
         private String type;
         private String name;

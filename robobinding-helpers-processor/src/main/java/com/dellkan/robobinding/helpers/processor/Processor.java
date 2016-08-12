@@ -324,14 +324,16 @@ public class Processor extends AbstractProcessor {
     private void traverseChildren(ModelDescriptor descriptor) {
         for (Element child : descriptor.getModel().getEnclosedElements()) {
             // Create list of existing methods
-            if (child.getKind() == ElementKind.METHOD && !child.getModifiers().contains(Modifier.PRIVATE)) {
+            if (child.getKind() == ElementKind.METHOD) {
                 // TODO: Remove @SkipMethod, and warning below when related projects are stabilized
                 if (child.getAnnotation(SkipMethod.class) != null) {
                     continue;
                 }
 
                 if (child.getAnnotation(PresentationMethod.class) == null) {
-                    messager.printMessage(Diagnostic.Kind.WARNING, "Skipping unannotated method " + child.getSimpleName(), child);
+                    if (!child.getModifiers().contains(Modifier.PRIVATE)) {
+                        messager.printMessage(Diagnostic.Kind.WARNING, "Skipping unannotated method " + child.getSimpleName(), child);
+                    }
                     continue;
                 }
 

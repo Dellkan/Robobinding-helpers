@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
+import javax.tools.Diagnostic;
 
 public abstract class Descriptor {
     ModelDescriptor modelDescriptor;
@@ -14,6 +16,19 @@ public abstract class Descriptor {
     public Descriptor(ModelDescriptor modelDescriptor, Element field) {
         this.modelDescriptor = modelDescriptor;
         this.field = field;
+
+        if (this.field.getModifiers().contains(Modifier.PRIVATE)) {
+            modelDescriptor.getMessager().printMessage(
+                    Diagnostic.Kind.ERROR,
+                    String.format(
+                            "%s.%s can't be set to private. The %s$$Helper model won't be able to access it!",
+                            modelDescriptor.getModel().getSimpleName(),
+                            field.getSimpleName(),
+                            modelDescriptor.getModel().getSimpleName()
+                    ),
+                    field
+            );
+        }
     }
 
     public boolean methodExists(String methodName) {
@@ -85,6 +100,9 @@ public abstract class Descriptor {
     }
 
     public String getAccessor() {
+        if (getField().getModifiers().contains(Modifier.STATIC)) {
+            return String.format("%s.%s", Util.typeToString(getField().getEnclosingElement().asType()), getField().getSimpleName().toString());
+        }
         return "this.data." + getClassPrefix() + getField().getSimpleName().toString();
     }
 
