@@ -17,9 +17,10 @@
 
         switch (group) {
             <#list descriptor.dataGroups as group>
-            case "${group}":
-                <#list dataItems as item><#if item.inGroup(group)>
-                // Field ${item.dataName}
+            case "${group}":<#list dataItems as item><#if item.inGroup(group)>
+                /*
+                    Field ${item.dataName}
+                */
                 child = data;
                 <#list item.path as path><#if path?has_content>
                 // Path ${path}
@@ -29,9 +30,7 @@
                     parent.put("${path}", child);
                 } else {
                     child = (Map<String, Object>) parent.get("${path}");
-                }
-                </#if>
-                </#list>
+                }</#if></#list>
                 <#if item.conditional>
                 if (${item.conditionalMethod}()) {
                     child.put("${item.dataName}", ${item.dataAccessor});

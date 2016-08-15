@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.tools.Diagnostic;
 
@@ -104,6 +105,10 @@ public abstract class Descriptor {
             return String.format("%s.%s", Util.typeToString(getField().getEnclosingElement().asType()), getField().getSimpleName().toString());
         }
         return "this.data." + getClassPrefix() + getField().getSimpleName().toString();
+    }
+
+    public boolean isMethod() {
+        return field.getKind().equals(ElementKind.METHOD);
     }
 
     public String getType() {

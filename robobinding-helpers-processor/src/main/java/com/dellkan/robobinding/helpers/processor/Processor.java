@@ -310,7 +310,7 @@ public class Processor extends AbstractProcessor {
             // Add data items
             for (AddToDataDescriptor item : child.getDataItems()) {
                 if (!includeDescriptor.shouldSkipField(item.getName())) {
-                    AddToDataDescriptor proxy = new AddToDataDescriptor(parent, item.getField(), item.getAnnotation(), item.isListContainer());
+                    AddToDataDescriptor proxy = new AddToDataDescriptor(parent, item.getField(), item.getAnnotation());
                     proxy.setClassPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + item.getClassPrefix());
                     proxy.setPrefixes(item.getPrefixes());
                     proxy.addPrefix(includeDescriptor.getPrefix());
@@ -323,6 +323,21 @@ public class Processor extends AbstractProcessor {
 
     private void traverseChildren(ModelDescriptor descriptor) {
         for (Element child : descriptor.getModel().getEnclosedElements()) {
+
+            AddToData addToDataAnnotation = null;
+            if ((addToDataAnnotation = child.getAnnotation(AddToData.class)) != null) {
+                descriptor.getDataItems().add(new AddToDataDescriptor(
+                        descriptor,
+                        child,
+                        addToDataAnnotation
+                ));
+            }
+
+            IncludeModel includeModelAnnotation = null;
+            if ((includeModelAnnotation = child.getAnnotation(IncludeModel.class)) != null) {
+                descriptor.getIncludeItems().add(new IncludeModelDescriptor(includeModelAnnotation, child, processingEnv.getTypeUtils().asElement(child.asType())));
+            }
+
             // Create list of existing methods
             if (child.getKind() == ElementKind.METHOD) {
                 // TODO: Remove @SkipMethod, and warning below when related projects are stabilized
@@ -389,36 +404,6 @@ public class Processor extends AbstractProcessor {
                         }
                     }
                 }
-            }
-            AddToData addToDataAnnotation = null;
-            if ((addToDataAnnotation = child.getAnnotation(AddToData.class)) != null) {
-                TypeMirror childType = null;
-                if (child.getKind().equals(ElementKind.METHOD)) {
-                    childType = ((ExecutableElement) child).getReturnType();
-                } else if (child.getKind().equals(ElementKind.FIELD)) {
-                    childType = child.asType();
-                }
-                if (childType != null) {
-                    descriptor.getDataItems().add(new AddToDataDescriptor(
-                            descriptor,
-                            child,
-                            addToDataAnnotation,
-                            processingEnv.getTypeUtils().isAssignable(
-                                    childType,
-                                    processingEnv.getTypeUtils().getDeclaredType(
-                                            processingEnv.getElementUtils().getTypeElement(ListContainer.class.getCanonicalName()),
-                                            processingEnv.getTypeUtils().getWildcardType(null, null)
-                                    )
-                            )
-                    ));
-                } else {
-                    messager.printMessage(Diagnostic.Kind.ERROR, "Couldn't process AddToData for child. Unable to determine (return)type", child);
-                }
-            }
-
-            IncludeModel includeModelAnnotation = null;
-            if ((includeModelAnnotation = child.getAnnotation(IncludeModel.class)) != null) {
-                descriptor.getIncludeItems().add(new IncludeModelDescriptor(includeModelAnnotation, child, processingEnv.getTypeUtils().asElement(child.asType())));
             }
         }
     }
