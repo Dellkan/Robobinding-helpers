@@ -5,16 +5,13 @@
     })
     public boolean ${item.validationNameValid}() {
         boolean isValid = false;
-        ValidationProcessor processor = null;
-        JSONObject validationConfig = new JSONObject();
         <#list item.validators as validator>
-        // ${validator.annotationType}
+        // @${validator.annotationType}
         {
         <#if !item.methodValidation>
-            processor = ValidationProcessor.getProcessor("${validator.processorType}", ValidationProcessor.processorExists("${validator.processorType}") ? null : new ${validator.processorType}());
-            validationConfig = new JSONObject();
+            ValidationProcessor processor = ValidationProcessor.getProcessor("${validator.processorType}", ValidationProcessor.processorExists("${validator.processorType}") ? null : new ${validator.processorType}());
             try {
-                validationConfig = new JSONObject("${validator.configValues?j_string}");
+                JSONObject validationConfig = new JSONObject("${validator.configValues?j_string}");
                 </#if>
                 boolean skipCheck = false;
                 <#if item.hasValidateIf>
@@ -59,25 +56,24 @@
     @DependsOnStateOf({<#list item.dependsOn as dependency>"${dependency}"<#sep>, </#list>})
     public int ${methodName}() {
         int error = 0;
-        ValidationProcessor processor = null;
-        JSONObject validationConfig = new JSONObject();
         <#list item.validators as validator>
-        // ${validator.annotationType}
-        <#if !item.methodValidation>
-        processor = ValidationProcessor.getProcessor("${validator.processorType}", ValidationProcessor.processorExists("${validator.processorType}") ? null : new ${validator.processorType}());
-        validationConfig = new JSONObject();
-        try {
-            validationConfig = new JSONObject("${validator.configValues?j_string}");
+        // @${validator.annotationType}
+        {
+            <#if !item.methodValidation>
+            ValidationProcessor processor = ValidationProcessor.getProcessor("${validator.processorType}", ValidationProcessor.processorExists("${validator.processorType}") ? null : new ${validator.processorType}());
+            try {
+                JSONObject validationConfig = new JSONObject("${validator.configValues?j_string}");
 
-            error = processor.getError(validationConfig, ${item.accessor});
-            <#else>
-            error = ${item.methodError};
-            </#if>
+                error = processor.getError(validationConfig, ${item.accessor});
+                <#else>
+                error = ${item.methodError};
+                </#if>
 
-            if (error != 0) {
-                return error;
-            }
-        } catch(Exception e) { }
+                if (error != 0) {
+                    return error;
+                }
+            } catch(Exception e) { }
+        }
         </#list>
 
         return 0;
