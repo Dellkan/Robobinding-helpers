@@ -266,7 +266,7 @@ public class Processor extends AbstractProcessor {
             // Add accessors
             for (GetSetDescriptor item : child.getAccessors()) {
                 if (!includeDescriptor.shouldSkipField(item.getName())) {
-                    GetSetDescriptor proxy = new GetSetDescriptor(parent, item.getField(), item.isGetter(), item.isSetter(), item.isTwoState(), item.getDependsOnRaw());
+                    GetSetDescriptor proxy = new GetSetDescriptor(parent, item.getField(), item.isGetter(), item.isSetter(), item.isTwoState());
                     proxy.setClassPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + item.getClassPrefix());
                     proxy.setPrefixes(item.getPrefixes());
                     proxy.addPrefix(includeDescriptor.getPrefix());
@@ -277,7 +277,7 @@ public class Processor extends AbstractProcessor {
             // Add methods
             for (MethodDescriptor item : child.getMethods()) {
                 if (!includeDescriptor.shouldSkipField(item.getName())) {
-                    MethodDescriptor proxy = new MethodDescriptor(parent, item.getMethod(), item.getDependsOnAnnotation());
+                    MethodDescriptor proxy = new MethodDescriptor(parent, item.getMethod());
                     proxy.setClassPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + item.getClassPrefix());
                     proxy.setPrefixes(item.getPrefixes());
                     proxy.addPrefix(includeDescriptor.getPrefix());
@@ -324,6 +324,7 @@ public class Processor extends AbstractProcessor {
     private void traverseChildren(ModelDescriptor descriptor) {
         for (Element child : descriptor.getModel().getEnclosedElements()) {
 
+            // Check if methods data output should be included in getData
             AddToData addToDataAnnotation = null;
             if ((addToDataAnnotation = child.getAnnotation(AddToData.class)) != null) {
                 descriptor.getDataItems().add(new AddToDataDescriptor(
@@ -340,18 +341,7 @@ public class Processor extends AbstractProcessor {
 
             // Create list of existing methods
             if (child.getKind() == ElementKind.METHOD) {
-                // TODO: Remove @SkipMethod, and warning below when related projects are stabilized
-                if (child.getAnnotation(SkipMethod.class) != null) {
-                    continue;
-                }
-
-                if (child.getAnnotation(PresentationMethod.class) == null) {
-                    if (!child.getModifiers().contains(Modifier.PRIVATE)) {
-                        messager.printMessage(Diagnostic.Kind.WARNING, "Skipping unannotated method " + child.getSimpleName(), child);
-                    }
-                    continue;
-                }
-
+                // Check if method is used as part of validation
                 Validate validateAnnotation = child.getAnnotation(Validate.class);
                 if (validateAnnotation != null) {
                     descriptor.getValidators().add(new ValidateDescriptor(
@@ -360,11 +350,22 @@ public class Processor extends AbstractProcessor {
                             Validate.class.getCanonicalName(),
                             null
                     ));
-                } else {
-                    ExecutableElement method = (ExecutableElement) child;
-                    DependsOnStateOf annotation = child.getAnnotation(DependsOnStateOf.class);
-                    descriptor.getMethods().add(new MethodDescriptor(descriptor, method, annotation));
                 }
+
+                // TODO: Remove @SkipMethod, and warning below when related projects are stabilized
+                if (child.getAnnotation(SkipMethod.class) != null) {
+                    continue;
+                }
+
+                if (child.getAnnotation(PresentationMethod.class) == null && child.getAnnotation(DependsOnStateOf.class) == null) {
+                    if (!child.getModifiers().contains(Modifier.PRIVATE)) {
+                        messager.printMessage(Diagnostic.Kind.WARNING, "Skipping unannotated method " + child.getSimpleName(), child);
+                    }
+                    continue;
+                }
+
+                ExecutableElement method = (ExecutableElement) child;
+                descriptor.getMethods().add(new MethodDescriptor(descriptor, method));
             }
 
             // Create list of getters, setters
@@ -372,18 +373,18 @@ public class Processor extends AbstractProcessor {
                 Annotation childAnnotation;
                 if ((childAnnotation = child.getAnnotation(Get.class)) != null) {
                     Get get = (Get) childAnnotation;
-                    descriptor.getAccessors().add(new GetSetDescriptor(descriptor, child, true, false, false, get.dependsOn()));
+                    descriptor.getAccessors().add(new GetSetDescriptor(descriptor, child, true, false, false));
                 } else if ((childAnnotation = child.getAnnotation(GetSet.class)) != null) {
                     GetSet getSet = (GetSet) childAnnotation;
-                    descriptor.getAccessors().add(new GetSetDescriptor(descriptor, child, true, true, false, getSet.dependsOn()));
+                    descriptor.getAccessors().add(new GetSetDescriptor(descriptor, child, true, true, false));
                 } else if ((childAnnotation = child.getAnnotation(com.dellkan.robobinding.helpers.modelgen.Set.class)) != null) {
-                    descriptor.getAccessors().add(new GetSetDescriptor(descriptor, child, true, true, false, null));
+                    descriptor.getAccessors().add(new GetSetDescriptor(descriptor, child, true, true, false));
                 } else if ((childAnnotation = child.getAnnotation(TwoStateGetSet.class)) != null) {
                     if (!Util.typeToString(child.asType()).equals("java.lang.Boolean")) {
                         messager.printMessage(Diagnostic.Kind.ERROR, "TwoStateGetSet only supports boolean fields!", child);
                     } else {
                         TwoStateGetSet twoStateGetSet = (TwoStateGetSet) childAnnotation;
-                        descriptor.getAccessors().add(new GetSetDescriptor(descriptor, child, true, true, true, twoStateGetSet.dependsOn()));
+                        descriptor.getAccessors().add(new GetSetDescriptor(descriptor, child, true, true, true));
                     }
                 } else if ((childAnnotation = child.getAnnotation(ListItems.class)) != null) {
                     descriptor.getListItems().add(new ListItemsDescriptor(descriptor, child));

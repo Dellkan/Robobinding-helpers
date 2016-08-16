@@ -6,13 +6,14 @@ import com.dellkan.robobinding.helpers.validation.ValidateIf;
 import com.dellkan.robobinding.helpers.validation.ValidateIfValue;
 import com.dellkan.robobinding.helpers.validation.validators.Validate;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 
@@ -43,6 +44,11 @@ public class ValidateDescriptor extends Descriptor {
         this.isMethodValidation = getField().getKind().equals(ElementKind.METHOD);
 
         if (this.isMethodValidation) {
+            // Make sure our method validation returns a boolean value
+            if (!((ExecutableElement)this.field).getReturnType().getKind().equals(TypeKind.BOOLEAN)) {
+                modelDescriptor.getMessager().printMessage(Diagnostic.Kind.ERROR, "Methods annotated with @Validate must return a boolean value!", field);
+            }
+
             methodAnnotation = getField().getAnnotation(Validate.class);
             if (this.methodAnnotation == null) {
                 modelDescriptor.getMessager().printMessage(Diagnostic.Kind.ERROR, "Could not retrieve method validation annotation");
@@ -102,31 +108,22 @@ public class ValidateDescriptor extends Descriptor {
         return this.validateIf;
     }
 
-    public String[] getDependsOn() {
-        List<String> dependencies = new ArrayList<>();
-        String prefix = getPrefix();
-        String name = getName();
+    public List<String> getDependsOn() {
+        List<String> dependencies = super.getDependsOn();
 
+        String name = getName();
         name = name.substring(0, 1).toLowerCase() + name.substring(1);
 
+        modelDescriptor.getMessager().printMessage(Diagnostic.Kind.WARNING, name, field);
+
         dependencies.add(name);
+
+
         if (isList) {
             dependencies.add(name + "Selected");
         }
 
-        if (validateIf != null) {
-            for (String dependency : validateIf.dependsOn()) {
-                if (prefix.length() > 1) {
-                    dependencies.add(prefix.substring(0, 1).toLowerCase() + prefix.substring(1) + dependency.substring(0, 1).toUpperCase() + dependency.substring(1));
-                } else {
-                    dependencies.add(dependency);
-                }
-            }
-        }
-
-        String[] processedDependencies = new String[dependencies.size()];
-        dependencies.toArray(processedDependencies);
-        return processedDependencies;
+        return dependencies;
     }
 
     public boolean getIsList() {

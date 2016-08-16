@@ -1,8 +1,10 @@
 package com.dellkan.robobinding.helpers.processor.descriptors;
 
+import com.dellkan.robobinding.helpers.modelgen.DependsOnStateOf;
 import com.dellkan.robobinding.helpers.processor.Util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.lang.model.element.Element;
@@ -13,6 +15,7 @@ import javax.tools.Diagnostic;
 public abstract class Descriptor {
     ModelDescriptor modelDescriptor;
     Element field;
+    List<String> fieldDependsOn = new ArrayList<>();
 
     public Descriptor(ModelDescriptor modelDescriptor, Element field) {
         this.modelDescriptor = modelDescriptor;
@@ -29,6 +32,11 @@ public abstract class Descriptor {
                     ),
                     field
             );
+        }
+
+        DependsOnStateOf dependsOn = this.field.getAnnotation(DependsOnStateOf.class);
+        if (dependsOn != null) {
+            Collections.addAll(fieldDependsOn, dependsOn.value());
         }
     }
 
@@ -113,5 +121,24 @@ public abstract class Descriptor {
 
     public String getType() {
         return Util.typeToString(getField().asType());
+    }
+
+    /**
+     * Get this field's dependencies. Based on {@link DependsOnStateOf}, however, may be modified by sub-classes.
+     * @return List of dependencies. Will be generated
+     */
+    public List<String> getDependsOn() {
+        List<String> dependencies = new ArrayList<>();
+        String prefix = getPrefix();
+
+        for (String dependency : fieldDependsOn) {
+            if (prefix.length() > 1) {
+                dependencies.add(prefix.substring(0, 1).toLowerCase() + prefix.substring(1) + dependency.substring(0, 1).toUpperCase() + dependency.substring(1));
+            } else {
+                dependencies.add(dependency);
+            }
+        }
+
+        return dependencies;
     }
 }

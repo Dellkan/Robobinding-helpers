@@ -1,28 +1,21 @@
 package com.dellkan.robobinding.helpers.processor.descriptors;
 
-import com.dellkan.robobinding.helpers.modelgen.DependsOnStateOf;
 import com.dellkan.robobinding.helpers.processor.Util;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
-import javax.tools.Diagnostic;
 
 /**
  * Used by freemarker, during compile-time annotation processing.
  * Describes methods found on classes marked with {@link com.dellkan.robobinding.helpers.modelgen.PresentationModel PresentationModel}.
  */
 public class MethodDescriptor extends Descriptor {
-    private DependsOnStateOf dependsOn;
-
-    public MethodDescriptor(ModelDescriptor modelDescriptor, ExecutableElement method, DependsOnStateOf dependsOn) {
+    public MethodDescriptor(ModelDescriptor modelDescriptor, ExecutableElement method) {
         super(modelDescriptor, method);
-        this.dependsOn = dependsOn;
     }
 
     public List<Param> getParams() {
@@ -90,28 +83,5 @@ public class MethodDescriptor extends Descriptor {
         public String getName() {
             return name;
         }
-    }
-
-    public String[] getDependsOn() {
-        List<String> dependencies = new ArrayList<>();
-        String prefix = getPrefix();
-
-        if (dependsOn != null) {
-            for (String dependency : dependsOn.value()) {
-                if (prefix.length() > 1) {
-                    dependencies.add(prefix.substring(0, 1).toLowerCase() + prefix.substring(1) + dependency.substring(0, 1).toUpperCase() + dependency.substring(1));
-                } else {
-                    dependencies.add(dependency);
-                }
-            }
-        }
-
-        String[] processedDependencies = new String[dependencies.size()];
-        dependencies.toArray(processedDependencies);
-        return processedDependencies;
-    }
-
-    public DependsOnStateOf getDependsOnAnnotation() {
-        return dependsOn;
     }
 }
