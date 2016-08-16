@@ -4,30 +4,24 @@ import com.dellkan.robobinding.helpers.model.ListContainer;
 import com.dellkan.robobinding.helpers.validation.ValidationProcessor;
 import com.dellkan.robobinding.helpers.validation.validators.ValidateList;
 
+import org.json.JSONObject;
+
 import java.lang.annotation.Annotation;
+import java.util.Map;
 
 public class ValidateListProcessor extends ValidationProcessor {
-    /**
-     * This constructor must be called, as it stores away your annotation with values.
-     *
-     * @param annotation Used by engine to give us a reference to the annotation.
-     */
-    public ValidateListProcessor(Annotation annotation) {
-        super(annotation);
-    }
-
     @Override
-    public boolean isValid(Object value) {
+    public boolean isValid(JSONObject config, Object value) {
         if (value instanceof ListContainer) {
-            return ((ListContainer) value).size() >= ((ValidateList) annotation).min();
+            return ((ListContainer) value).size() >= config.optInt("min");
         }
         return false;
     }
 
     @Override
-    public int getError(Object value) {
-        if (!isValid(value)) {
-            return ((ValidateList) annotation).error();
+    public int getError(JSONObject config, Object value) {
+        if (!isValid(config, value)) {
+            return config.optInt("error");
         }
         return 0;
     }

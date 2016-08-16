@@ -3,23 +3,21 @@ package com.dellkan.robobinding.helpers.validation.processors;
 import com.dellkan.robobinding.helpers.validation.ValidationProcessor;
 import com.dellkan.robobinding.helpers.validation.validators.ValidatePattern;
 
+import org.json.JSONObject;
+
 import java.lang.annotation.Annotation;
 
 public class ValidatePatternProcessor extends ValidationProcessor {
-    public ValidatePatternProcessor(Annotation annotation) {
-        super(annotation);
-    }
-
     @Override
-    public boolean isValid(Object value) {
+    public boolean isValid(JSONObject config, Object value) {
         String text = value != null ? value.toString() : "";
-        return text.matches(((ValidatePattern)annotation).value());
+        return text.matches(config.optString("value", ""));
     }
 
     @Override
-    public int getError(Object value) {
-        if (!isValid(value)) {
-            return ((ValidatePattern) annotation).error();
+    public int getError(JSONObject config, Object value) {
+        if (!isValid(config, value)) {
+            return config.optInt("error");
         }
         return 0;
     }

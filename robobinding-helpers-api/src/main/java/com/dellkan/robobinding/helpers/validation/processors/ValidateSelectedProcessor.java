@@ -3,22 +3,12 @@ package com.dellkan.robobinding.helpers.validation.processors;
 import com.dellkan.robobinding.helpers.model.ListContainer;
 import com.dellkan.robobinding.helpers.model.ListItemWithValidation;
 import com.dellkan.robobinding.helpers.validation.ValidationProcessor;
-import com.dellkan.robobinding.helpers.validation.validators.ValidateSelected;
 
-import java.lang.annotation.Annotation;
+import org.json.JSONObject;
 
 public class ValidateSelectedProcessor extends ValidationProcessor {
-    /**
-     * This constructor must be called, as it stores away your annotation with values.
-     *
-     * @param annotation Used by engine to give us a reference to the annotation.
-     */
-    public ValidateSelectedProcessor(Annotation annotation) {
-        super(annotation);
-    }
-
     @Override
-    public boolean isValid(Object value) {
+    public boolean isValid(JSONObject config, Object value) {
         if (value instanceof ListContainer) {
             Object selectedValue = ((ListContainer) value).getSelectedItem();
             if (selectedValue instanceof ListItemWithValidation) {
@@ -33,9 +23,9 @@ public class ValidateSelectedProcessor extends ValidationProcessor {
     }
 
     @Override
-    public int getError(Object value) {
-        if (!isValid(value)) {
-            return ((ValidateSelected) annotation).error();
+    public int getError(JSONObject config, Object value) {
+        if (!isValid(config, value)) {
+            return config.optInt("error", 0);
         }
         return 0;
     }

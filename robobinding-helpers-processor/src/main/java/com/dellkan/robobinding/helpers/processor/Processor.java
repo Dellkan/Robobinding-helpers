@@ -18,6 +18,7 @@ import com.dellkan.robobinding.helpers.processor.descriptors.IncludeModelDescrip
 import com.dellkan.robobinding.helpers.processor.descriptors.ListItemsDescriptor;
 import com.dellkan.robobinding.helpers.processor.descriptors.MethodDescriptor;
 import com.dellkan.robobinding.helpers.processor.descriptors.ModelDescriptor;
+import com.dellkan.robobinding.helpers.processor.descriptors.SubValidateDescriptor;
 import com.dellkan.robobinding.helpers.processor.descriptors.ValidateDescriptor;
 import com.dellkan.robobinding.helpers.validation.ValidateIf;
 import com.dellkan.robobinding.helpers.validation.ValidateIfValue;
@@ -299,7 +300,14 @@ public class Processor extends AbstractProcessor {
             // Add validators
             for (ValidateDescriptor item : child.getValidators()) {
                 if (!includeDescriptor.shouldSkipField(item.getName())) {
-                    ValidateDescriptor proxy = new ValidateDescriptor(parent, item.getField(), item.getAnnotationType(), item.getProcessor());
+                    ValidateDescriptor proxy = new ValidateDescriptor(parent, item.getField());
+                    for (SubValidateDescriptor subValidator : item.getValidators()) {
+                        SubValidateDescriptor subProxy = new SubValidateDescriptor(parent, item.getField(), proxy, subValidator.getAnnotationType(), subValidator.getProcessor());
+                        subProxy.setClassPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + item.getClassPrefix());
+                        subProxy.setPrefixes(subValidator.getPrefixes());
+                        subProxy.addPrefix(includeDescriptor.getPrefix());
+                        proxy.addValidator(subProxy);
+                    }
                     proxy.setClassPrefix(includeDescriptor.getField().getSimpleName().toString() + "." + item.getClassPrefix());
                     proxy.setPrefixes(item.getPrefixes());
                     proxy.addPrefix(includeDescriptor.getPrefix());
@@ -324,6 +332,8 @@ public class Processor extends AbstractProcessor {
     private void traverseChildren(ModelDescriptor descriptor) {
         for (Element child : descriptor.getModel().getEnclosedElements()) {
 
+            ValidateDescriptor validationDescriptor = null;
+
             // Check if methods data output should be included in getData
             AddToData addToDataAnnotation = null;
             if ((addToDataAnnotation = child.getAnnotation(AddToData.class)) != null) {
@@ -344,9 +354,11 @@ public class Processor extends AbstractProcessor {
                 // Check if method is used as part of validation
                 Validate validateAnnotation = child.getAnnotation(Validate.class);
                 if (validateAnnotation != null) {
-                    descriptor.getValidators().add(new ValidateDescriptor(
+                    validationDescriptor = validationDescriptor == null ? new ValidateDescriptor(descriptor, child) : validationDescriptor;
+                    validationDescriptor.addValidator(new SubValidateDescriptor(
                             descriptor,
                             child,
+                            validationDescriptor,
                             Validate.class.getCanonicalName(),
                             null
                     ));
@@ -395,15 +407,21 @@ public class Processor extends AbstractProcessor {
                     for (AnnotationMirror mirror : child.getAnnotationMirrors()) {
                         for (String annotationClass : markerAnnotation.getValue()) {
                             if (Util.typeToString(mirror.getAnnotationType()).equals(annotationClass)) {
-                                descriptor.getValidators().add(new ValidateDescriptor(
+                                validationDescriptor = validationDescriptor == null ? new ValidateDescriptor(descriptor, child) : validationDescriptor;
+                                validationDescriptor.addValidator(new SubValidateDescriptor(
                                         descriptor,
                                         child,
+                                        validationDescriptor,
                                         annotationClass,
                                         markerAnnotation.getKey()
                                 ));
                             }
                         }
                     }
+                }
+
+                if (validationDescriptor != null && !validationDescriptor.getValidators().isEmpty()) {
+                    descriptor.getValidators().add(validationDescriptor);
                 }
             }
         }

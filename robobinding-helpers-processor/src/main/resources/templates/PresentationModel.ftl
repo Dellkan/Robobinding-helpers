@@ -1,5 +1,6 @@
 package ${packageName};
 
+import org.json.JSONObject;
 import org.robobinding.annotation.DependsOnStateOf;
 import org.robobinding.annotation.ItemPresentationModel;
 import org.robobinding.annotation.PresentationModel;

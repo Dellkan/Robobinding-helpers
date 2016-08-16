@@ -1,6 +1,10 @@
 package com.dellkan.robobinding.helpers.validation;
 
+import org.json.JSONObject;
+
 import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>Extend this class to create custom validation of your attributes.
@@ -10,25 +14,12 @@ import java.lang.annotation.Annotation;
  */
 public abstract class ValidationProcessor {
     /**
-     * Your annotation, with appropriate values set. Must be cast to your own type.
-     */
-    protected Annotation annotation;
-
-    /**
-     * This constructor must be called, as it stores away your annotation with values.
-     * @param annotation Used by engine to give us a reference to the annotation.
-     */
-    public ValidationProcessor(Annotation annotation) {
-        this.annotation = annotation;
-    }
-
-    /**
      * Called by the engine to determine if the value of your annotated field is valid
      * @param value The new value of the field. We can't know what types of fields you'll annotate, so we can't
      *              assume any types for value.
      * @return true if the field has a valid value, or not
      */
-    public abstract boolean isValid(Object value);
+    public abstract boolean isValid(JSONObject config, Object value);
 
     /**
      * Determine the type of error if validation fails. This will usually be called directly, so
@@ -37,5 +28,17 @@ public abstract class ValidationProcessor {
      *              assume any types for value.
      * @return A @StringRes resource pointing to an error, or 0 if there is no error.
      */
-    public abstract int getError(Object value);
+    public abstract int getError(JSONObject config, Object value);
+
+    private static Map<String, ValidationProcessor> processors = new HashMap<>();
+    public static ValidationProcessor getProcessor(String type, ValidationProcessor createIfMissing) {
+        if (createIfMissing != null) {
+            processors.put(type, createIfMissing);
+        }
+        return processors.get(type);
+    }
+
+    public static boolean processorExists(String type) {
+        return processors.containsKey(type);
+    }
 }

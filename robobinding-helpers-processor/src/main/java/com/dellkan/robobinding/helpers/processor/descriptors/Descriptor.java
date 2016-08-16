@@ -123,6 +123,26 @@ public abstract class Descriptor {
         return Util.typeToString(getField().asType());
     }
 
+    public boolean isBoolean() {
+        return getType().equals("java.lang.Boolean");
+    }
+
+    public boolean isNumeric() {
+        switch (getType()) {
+            case "java.lang.Integer":
+            case "java.lang.Float":
+            case "java.lang.Double":
+            case "java.lang.Long":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public boolean isString() {
+        return getType().equals("java.lang.String");
+    }
+
     /**
      * Get this field's dependencies. Based on {@link DependsOnStateOf}, however, may be modified by sub-classes.
      * @return List of dependencies. Will be generated

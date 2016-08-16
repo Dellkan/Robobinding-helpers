@@ -1,47 +1,49 @@
 <#list validators as item>
-
-    <#if !item.methodValidation>
-    private ValidationProcessor ${item.name?uncap_first}ErrorProcessor;
-    </#if>
-
     <#if !item.methodExists(item.validationNameValid)>
     @DependsOnStateOf({<#list item.dependsOn as dependency>
         <#if item.selfDependencyNecessary(dependency)>"${dependency}"</#if><#sep>,</#list>
     })
     public boolean ${item.validationNameValid}() {
+        boolean isValid = false;
+        ValidationProcessor processor = null;
+        JSONObject validationConfig = new JSONObject();
+        <#list item.validators as validator>
+        // ${validator.annotationType}
+        {
         <#if !item.methodValidation>
-        if (this.${item.name?uncap_first}ErrorProcessor == null) {
+            processor = ValidationProcessor.getProcessor("${validator.processorType}", ValidationProcessor.processorExists("${validator.processorType}") ? null : new ${validator.processorType}());
+            validationConfig = new JSONObject();
             try {
-                Annotation annotation = ${item.accessorClass}.getClass().getDeclaredField("${item.fieldName}").getAnnotation(${item.annotationType}.class);
-                this.${item.name?uncap_first}ErrorProcessor = new ${item.processorType}(annotation);
-            } catch (NoSuchFieldException e) {
-               e.printStackTrace();
-            }
+                validationConfig = new JSONObject("${validator.configValues?j_string}");
+                </#if>
+                boolean skipCheck = false;
+                <#if item.hasValidateIf>
+                skipCheck = !${item.validateIf}();
+                </#if>
+                <#if item.hasValidateIfValue>
+                <#if item.numeric>
+                skipCheck = ((Number) ${item.accessor}) == null || ((Number) ${item.accessor}).doubleValue() == 0D;
+                <#elseif item.boolean>
+                skipCheck = ((${item.type}) ${item.accessor}) == null;
+                <#elseif item.string>
+                skipCheck = ${item.accessor} == null || ${item.accessor}.trim().isEmpty() || ${item.accessor}.equalsIgnoreCase("0");
+                <#else>
+                skipCheck = ${item.accessor} == null;
+                </#if>
+                </#if>
+                <#if item.methodValidation>
+                isValid = skipCheck || ${item.accessor}();
+                <#else>
+                isValid = skipCheck || processor.isValid(validationConfig, ${validator.accessor});
+                </#if>
+
+                if (!isValid) {
+                    return false;
+                }
+            } catch(Exception e) { }
         }
-        if (this.${item.name?uncap_first}ErrorProcessor != null) {
-        </#if>
-            boolean skipCheck = false;
-            <#if item.hasValidateIf>
-            skipCheck = !${item.validateIf}();
-            </#if>
-            <#if item.hasValidateIfValue>
-            <#if item.numeric>
-            skipCheck = ((Number) ${item.accessor}) == null || ((Number) ${item.accessor}).doubleValue() == 0D;
-            <#elseif item.boolean>
-            skipCheck = ((${item.type}) ${item.accessor}) == null;
-            <#elseif item.string>
-            skipCheck = ${item.accessor} == null || ${item.accessor}.trim().isEmpty() || ${item.accessor}.equalsIgnoreCase("0");
-            <#else>
-            skipCheck = ${item.accessor} == null;
-            </#if>
-            </#if>
-            <#if item.methodValidation>
-            return skipCheck || ${item.accessor}();
-            <#else>
-            return skipCheck || this.${item.name?uncap_first}ErrorProcessor.isValid(${item.accessor});
-        }
-        return false;
-        </#if>
+        </#list>
+        return isValid;
     }
     </#if>
 
@@ -56,24 +58,29 @@
     <#if !item.methodExists(methodName)>
     @DependsOnStateOf({<#list item.dependsOn as dependency>"${dependency}"<#sep>, </#list>})
     public int ${methodName}() {
+        int error = 0;
+        ValidationProcessor processor = null;
+        JSONObject validationConfig = new JSONObject();
+        <#list item.validators as validator>
+        // ${validator.annotationType}
         <#if !item.methodValidation>
-        if (this.${item.name?uncap_first}ErrorProcessor == null) {
-            try {
-                Annotation annotation = ${item.accessorClass}.getClass().getDeclaredField("${item.fieldName}").getAnnotation(${item.annotationType}.class);
-                this.${item.name?uncap_first}ErrorProcessor = new ${item.processorType}(annotation);
-            } catch (NoSuchFieldException e) {
-               e.printStackTrace();
+        processor = ValidationProcessor.getProcessor("${validator.processorType}", ValidationProcessor.processorExists("${validator.processorType}") ? null : new ${validator.processorType}());
+        validationConfig = new JSONObject();
+        try {
+            validationConfig = new JSONObject("${validator.configValues?j_string}");
+
+            error = processor.getError(validationConfig, ${item.accessor});
+            <#else>
+            error = ${item.methodError};
+            </#if>
+
+            if (error != 0) {
+                return error;
             }
-        }
-        if (this.${item.name?uncap_first}ErrorProcessor != null) {
-            if (is${item.name}Invalid()) {
-                return this.${item.name?uncap_first}ErrorProcessor.getError(${item.accessor});
-            }
-        }
+        } catch(Exception e) { }
+        </#list>
+
         return 0;
-        <#else>
-        return ${item.methodError};
-        </#if>
     }
     </#if>
 </#list>

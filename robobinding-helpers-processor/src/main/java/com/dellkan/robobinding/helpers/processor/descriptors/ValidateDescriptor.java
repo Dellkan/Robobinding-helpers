@@ -6,6 +6,7 @@ import com.dellkan.robobinding.helpers.validation.ValidateIf;
 import com.dellkan.robobinding.helpers.validation.ValidateIfValue;
 import com.dellkan.robobinding.helpers.validation.validators.Validate;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -23,8 +24,6 @@ import javax.tools.Diagnostic;
  * and {@link com.dellkan.robobinding.helpers.validation.ValidateType ValidateType}.
  */
 public class ValidateDescriptor extends Descriptor {
-    private String annotationClass;
-    private TypeElement processor;
     private ValidateIf validateIf;
     private ValidateIfValue validateIfValue;
     private boolean isList;
@@ -32,10 +31,8 @@ public class ValidateDescriptor extends Descriptor {
     private Validate methodAnnotation;
     private boolean isMethodValidation;
 
-    public ValidateDescriptor(ModelDescriptor modelDescriptor, Element field, String annotationClass, TypeElement processor) {
+    public ValidateDescriptor(ModelDescriptor modelDescriptor, Element field) {
         super(modelDescriptor, field);
-        this.annotationClass = annotationClass;
-        this.processor = processor;
         this.validateIf = field.getAnnotation(ValidateIf.class);
         this.validateIfValue = field.getAnnotation(ValidateIfValue.class);
 
@@ -62,22 +59,6 @@ public class ValidateDescriptor extends Descriptor {
                     )
             );
         }
-
-        if (!this.isMethodValidation && this.processor == null) {
-            modelDescriptor.getMessager().printMessage(Diagnostic.Kind.ERROR, "processor null on a non-methodValidation");
-        }
-    }
-
-    public String getProcessorType() {
-        return Util.typeToString(this.processor.asType());
-    }
-
-    public TypeElement getProcessor() {
-        return this.processor;
-    }
-
-    public String getAnnotationType() {
-        return annotationClass;
     }
 
     public String getAccessorClass() {
@@ -114,8 +95,6 @@ public class ValidateDescriptor extends Descriptor {
         String name = getName();
         name = name.substring(0, 1).toLowerCase() + name.substring(1);
 
-        modelDescriptor.getMessager().printMessage(Diagnostic.Kind.WARNING, name, field);
-
         dependencies.add(name);
 
 
@@ -133,26 +112,6 @@ public class ValidateDescriptor extends Descriptor {
     /*
         Helpers needed for  hasValidateIfValue
      */
-
-    public boolean isBoolean() {
-        return getType().equals("java.lang.Boolean");
-    }
-
-    public boolean isNumeric() {
-        switch (getType()) {
-            case "java.lang.Integer":
-            case "java.lang.Float":
-            case "java.lang.Double":
-            case "java.lang.Long":
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    public boolean isString() {
-        return getType().equals("java.lang.String");
-    }
 
     public int getMethodError() {
         if (isMethodValidation() && methodAnnotation != null) {
@@ -209,5 +168,14 @@ public class ValidateDescriptor extends Descriptor {
             }
         }
         return true;
+    }
+
+    private List<SubValidateDescriptor> subValidateDescriptors = new ArrayList<>();
+    public List<SubValidateDescriptor> getValidators() {
+        return subValidateDescriptors;
+    }
+
+    public void addValidator(SubValidateDescriptor subValidateDescriptor) {
+        subValidateDescriptors.add(subValidateDescriptor);
     }
 }
