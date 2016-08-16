@@ -3,12 +3,11 @@ package com.dellkan.robobinding.helpers.processor.descriptors;
 import com.dellkan.robobinding.helpers.processor.Util;
 import com.dellkan.robobinding.helpers.validation.ValidateIf;
 import com.dellkan.robobinding.helpers.validation.ValidateIfValue;
+import com.dellkan.robobinding.helpers.validation.validators.ValidateList;
 
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -62,8 +61,8 @@ public class SubValidateDescriptor extends Descriptor {
         for (AnnotationMirror mirror : field.getAnnotationMirrors()) {
             // Find the validation annotation we're looking for
             if (mirror.getAnnotationType().asElement().asType().toString().equals(annotationClass)) {
-                // Iterate through and convert its values
-                for(Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : mirror.getElementValues().entrySet()) {
+                // Iterate through and convert its values. Note - you HAVE to use getElementUtils().getElementValuesWithDefaults(mirror), otherwise, you lose all annotation defaults!
+                for(Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : modelDescriptor.getProcessingEnvironment().getElementUtils().getElementValuesWithDefaults(mirror).entrySet()) {
                     Object defaultValue = entry.getKey().getDefaultValue() != null ? entry.getKey().getDefaultValue().getValue() : null;
                     Object value = entry.getValue().getValue();
 
