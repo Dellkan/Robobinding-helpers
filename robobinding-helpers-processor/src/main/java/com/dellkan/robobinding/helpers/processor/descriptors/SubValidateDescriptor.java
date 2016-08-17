@@ -57,6 +57,8 @@ public class SubValidateDescriptor extends Descriptor {
     public String getConfigValues() {
         Map<String, Object> values = new HashMap<>();
 
+        values.put("_annotation_type", getAnnotationType());
+
         // Look at all the annotations for the field
         for (AnnotationMirror mirror : field.getAnnotationMirrors()) {
             // Find the validation annotation we're looking for

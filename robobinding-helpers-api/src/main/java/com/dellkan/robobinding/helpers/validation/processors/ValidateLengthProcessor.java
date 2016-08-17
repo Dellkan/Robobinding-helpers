@@ -19,35 +19,40 @@ public class ValidateLengthProcessor extends ValidationProcessor {
             return false;
         }
 
-//        if (annotation instanceof ValidateLengthMin) {
-//            return value.toString().length() >= ((ValidateLengthMin) annotation).min();
-//        } else if (annotation instanceof ValidateLengthMax) {
-//            return value.toString().length() <= ((ValidateLengthMax) annotation).max();
-//        } else if (annotation instanceof ValidateLengthRange) {
-//            return value.toString().length() >= ((ValidateLengthRange) annotation).min() && value.toString().length() <= ((ValidateLengthRange) annotation).max();
-//        } else { // Number validation types
-//            Double number = null;
-//            if (Number.class.isAssignableFrom(value.getClass())) {
-//                number = ((Number) value).doubleValue();
-//            } else if (String.class.isAssignableFrom(value.getClass())) {
-//                try {
-//                    number = Double.parseDouble(value.toString());
-//                } catch (NullPointerException e) {
-//
-//                } catch (NumberFormatException e) {
-//
-//                }
-//            }
-//            if (number != null) {
-//                if (annotation instanceof ValidateMin) {
-//                    return number >= ((ValidateMin) annotation).min();
-//                } else if (annotation instanceof ValidateMax) {
-//                    return number <= ((ValidateMax) annotation).max();
-//                } else if (annotation instanceof ValidateRange) {
-//                    return number >= ((ValidateRange) annotation).min() && number <= ((ValidateRange) annotation).max();
-//                }
-//            }
-//        }
+        String annotationType = config.optString("_annotation_type", ValidateLengthRange.class.getCanonicalName());
+
+        int min = config.optInt("min");
+        int max = config.optInt("max");
+
+        if (annotationType.equals(ValidateLengthMin.class.getCanonicalName())) {
+            return value.toString().length() >= min;
+        } else if (annotationType.equals(ValidateLengthMax.class.getCanonicalName())) {
+            return value.toString().length() <= max;
+        } else if (annotationType.equals(ValidateLengthRange.class.getCanonicalName())) {
+            return value.toString().length() >= min && value.toString().length() <= max;
+        } else { // Number validation types
+            Double number = null;
+            if (Number.class.isAssignableFrom(value.getClass())) {
+                number = ((Number) value).doubleValue();
+            } else if (String.class.isAssignableFrom(value.getClass())) {
+                try {
+                    number = Double.parseDouble(value.toString());
+                } catch (NullPointerException e) {
+
+                } catch (NumberFormatException e) {
+
+                }
+            }
+            if (number != null) {
+                if (annotationType.equals(ValidateMin.class.getCanonicalName())) {
+                    return number >= min;
+                } else if (annotationType.equals(ValidateMax.class.getCanonicalName())) {
+                    return number <= max;
+                } else if (annotationType.equals(ValidateRange.class.getCanonicalName())) {
+                    return number >= min && number <= max;
+                }
+            }
+        }
         return false;
     }
 
