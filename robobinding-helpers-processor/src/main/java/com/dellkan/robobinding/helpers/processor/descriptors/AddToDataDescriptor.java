@@ -50,7 +50,13 @@ public class AddToDataDescriptor extends Descriptor {
 
     public String getDataName() {
         if (annotation.alternativeName().isEmpty()) {
-            return getField().getSimpleName().toString();
+            String name = getField().getSimpleName().toString();
+            if (isMethod()) {
+                if (name.startsWith("get") && name.length() > 3) {
+                    name = name.substring(3, 4).toLowerCase() + name.substring(4);
+                }
+            }
+            return name;
         }
         return annotation.alternativeName();
     }
