@@ -10,18 +10,24 @@ import java.lang.annotation.Annotation;
 import java.util.Map;
 
 public class ValidateListProcessor extends ValidationProcessor {
+    private int min;
+    public ValidateListProcessor(JSONObject config) {
+        super(config);
+        this.min = config.optInt("min");
+    }
+
     @Override
-    public boolean isValid(JSONObject config, Object value) {
+    public boolean isValid(Object value) {
         if (value instanceof ListContainer) {
-            return ((ListContainer) value).size() >= config.optInt("min");
+            return ((ListContainer) value).size() >= min;
         }
         return false;
     }
 
     @Override
-    public int getError(JSONObject config, Object value) {
-        if (!isValid(config, value)) {
-            return config.optInt("error");
+    public int getError(Object value) {
+        if (!isValid(value)) {
+            return this.error;
         }
         return 0;
     }

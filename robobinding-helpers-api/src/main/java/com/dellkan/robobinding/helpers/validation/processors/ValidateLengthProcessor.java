@@ -13,16 +13,20 @@ import org.json.JSONObject;
 import java.lang.annotation.Annotation;
 
 public class ValidateLengthProcessor extends ValidationProcessor {
+    private int min;
+    private int max;
+
+    public ValidateLengthProcessor(JSONObject config) {
+        super(config);
+        this.min = config.optInt("min", 0);
+        this.max = config.optInt("max", 0);
+    }
+
     @Override
-    public boolean isValid(JSONObject config, Object value) {
+    public boolean isValid(Object value) {
         if (value == null) {
             return false;
         }
-
-        String annotationType = config.optString("_annotation_type", ValidateLengthRange.class.getCanonicalName());
-
-        int min = config.optInt("min");
-        int max = config.optInt("max");
 
         if (annotationType.equals(ValidateLengthMin.class.getCanonicalName())) {
             return value.toString().length() >= min;
@@ -57,9 +61,9 @@ public class ValidateLengthProcessor extends ValidationProcessor {
     }
 
     @Override
-    public int getError(JSONObject config, Object value) {
-        if (!isValid(config, value)) {
-            return config.optInt("error", 0);
+    public int getError(Object value) {
+        if (!isValid(value)) {
+            return this.error;
         } else {
             return 0;
         }

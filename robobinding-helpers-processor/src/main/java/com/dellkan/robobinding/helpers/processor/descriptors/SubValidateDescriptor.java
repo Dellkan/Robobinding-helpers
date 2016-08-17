@@ -9,6 +9,7 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -36,10 +37,16 @@ public class SubValidateDescriptor extends Descriptor {
         if (!parent.isMethodValidation() && this.processor == null) {
             modelDescriptor.getMessager().printMessage(Diagnostic.Kind.ERROR, "processor null on a non-methodValidation");
         }
+
+        this.uniqueName = UUID.randomUUID();
     }
 
     public String getProcessorType() {
         return Util.typeToString(this.processor.asType());
+    }
+
+    public String getProcessorTypeSimpleName() {
+        return this.processor.getSimpleName().toString();
     }
 
     public TypeElement getProcessor() {
@@ -48,6 +55,16 @@ public class SubValidateDescriptor extends Descriptor {
 
     public String getAnnotationType() {
         return annotationClass;
+    }
+
+    public String getAnnotationTypeSimpleName() {
+        String[] bits = annotationClass.split("\\.");
+        return bits[bits.length - 1];
+    }
+
+    private UUID uniqueName;
+    public String getUniqueName() {
+        return uniqueName.toString();
     }
 
     /**

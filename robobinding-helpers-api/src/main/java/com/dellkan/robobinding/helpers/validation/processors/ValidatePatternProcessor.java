@@ -8,16 +8,22 @@ import org.json.JSONObject;
 import java.lang.annotation.Annotation;
 
 public class ValidatePatternProcessor extends ValidationProcessor {
-    @Override
-    public boolean isValid(JSONObject config, Object value) {
-        String text = value != null ? value.toString() : "";
-        return text.matches(config.optString("value", ""));
+    private String value;
+    public ValidatePatternProcessor(JSONObject config) {
+        super(config);
+        value = config.optString("value", "");
     }
 
     @Override
-    public int getError(JSONObject config, Object value) {
-        if (!isValid(config, value)) {
-            return config.optInt("error");
+    public boolean isValid(Object value) {
+        String text = value != null ? value.toString() : "";
+        return text.matches(this.value);
+    }
+
+    @Override
+    public int getError(Object value) {
+        if (!isValid(value)) {
+            return this.error;
         }
         return 0;
     }

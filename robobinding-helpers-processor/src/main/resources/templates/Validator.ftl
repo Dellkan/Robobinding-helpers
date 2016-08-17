@@ -1,3 +1,19 @@
+private Map<String, ValidationProcessor> validationProcessors = new HashMap<>();
+
+private ValidationProcessor getValidationProcessor(String name) {
+    if (!validationProcessors.containsKey(name)) {
+        switch (name) {<#list validators as item><#list item.validators as validator>
+            case "${validator.uniqueName}": // ${item.name}@${validator.annotationTypeSimpleName}
+                try {
+                    JSONObject validationConfig = new JSONObject("${validator.configValues?j_string}");
+                    validationProcessors.put(name, new ${validator.processorType}(validationConfig));
+                } catch(Exception e) {}
+                break;</#list></#list>
+        }
+    }
+    return validationProcessors.get(name);
+}
+
 <#list validators as item>
     <#if !item.methodExists(item.validationNameValid)>
     @DependsOnStateOf({<#list item.dependsOn as dependency>
@@ -8,11 +24,7 @@
         <#list item.validators as validator>
         // @${validator.annotationType}
         {
-        <#if !item.methodValidation>
-            ValidationProcessor processor = ValidationProcessor.getProcessor("${validator.processorType}", ValidationProcessor.processorExists("${validator.processorType}") ? null : new ${validator.processorType}());
             try {
-                JSONObject validationConfig = new JSONObject("${validator.configValues?j_string}");
-                </#if>
                 boolean skipCheck = false;
                 <#if item.hasValidateIf>
                 skipCheck = !${item.validateIf}();
@@ -31,7 +43,7 @@
                 <#if item.methodValidation>
                 isValid = skipCheck || ${item.accessor}();
                 <#else>
-                isValid = skipCheck || processor.isValid(validationConfig, ${validator.accessor});
+                isValid = skipCheck || getValidationProcessor("${validator.uniqueName}").isValid(${validator.accessor});
                 </#if>
 
                 if (!isValid) {
@@ -60,11 +72,8 @@
         // @${validator.annotationType}
         {
             <#if !item.methodValidation>
-            ValidationProcessor processor = ValidationProcessor.getProcessor("${validator.processorType}", ValidationProcessor.processorExists("${validator.processorType}") ? null : new ${validator.processorType}());
             try {
-                JSONObject validationConfig = new JSONObject("${validator.configValues?j_string}");
-
-                error = processor.getError(validationConfig, ${item.accessor});
+                error = getValidationProcessor("${validator.uniqueName}").getError(${item.accessor});
                 <#else>
                 error = ${item.methodError};
                 </#if>

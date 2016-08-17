@@ -2,7 +2,6 @@ package com.dellkan.robobinding.helpers.validation;
 
 import org.json.JSONObject;
 
-import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,13 +12,26 @@ import java.util.Map;
  * and this class will determine if that attribute is holding a valid value</p>
  */
 public abstract class ValidationProcessor {
+    private JSONObject config;
+    protected int error;
+    protected String annotationType;
+    public ValidationProcessor(JSONObject config) {
+        this.config = config;
+        this.error = config.optInt("error");
+        this.annotationType = config.optString("_annotation_type", "");
+    }
+
+    public JSONObject getConfig() {
+        return config;
+    }
+
     /**
      * Called by the engine to determine if the value of your annotated field is valid
      * @param value The new value of the field. We can't know what types of fields you'll annotate, so we can't
      *              assume any types for value.
      * @return true if the field has a valid value, or not
      */
-    public abstract boolean isValid(JSONObject config, Object value);
+    public abstract boolean isValid(Object value);
 
     /**
      * Determine the type of error if validation fails. This will usually be called directly, so
@@ -28,7 +40,7 @@ public abstract class ValidationProcessor {
      *              assume any types for value.
      * @return A @StringRes resource pointing to an error, or 0 if there is no error.
      */
-    public abstract int getError(JSONObject config, Object value);
+    public abstract int getError(Object value);
 
     private static Map<String, ValidationProcessor> processors = new HashMap<>();
     public static ValidationProcessor getProcessor(String type, ValidationProcessor createIfMissing) {

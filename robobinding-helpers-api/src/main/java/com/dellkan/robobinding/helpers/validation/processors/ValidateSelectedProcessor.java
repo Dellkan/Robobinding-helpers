@@ -7,8 +7,12 @@ import com.dellkan.robobinding.helpers.validation.ValidationProcessor;
 import org.json.JSONObject;
 
 public class ValidateSelectedProcessor extends ValidationProcessor {
+    public ValidateSelectedProcessor(JSONObject config) {
+        super(config);
+    }
+
     @Override
-    public boolean isValid(JSONObject config, Object value) {
+    public boolean isValid(Object value) {
         if (value instanceof ListContainer) {
             Object selectedValue = ((ListContainer) value).getSelectedItem();
             if (selectedValue instanceof ListItemWithValidation) {
@@ -23,9 +27,9 @@ public class ValidateSelectedProcessor extends ValidationProcessor {
     }
 
     @Override
-    public int getError(JSONObject config, Object value) {
-        if (!isValid(config, value)) {
-            return config.optInt("error", 0);
+    public int getError(Object value) {
+        if (!isValid(value)) {
+            return this.error;
         }
         return 0;
     }
