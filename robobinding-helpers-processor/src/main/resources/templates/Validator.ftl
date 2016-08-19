@@ -73,9 +73,22 @@ private ValidationProcessor getValidationProcessor(String name) {
         {
             <#if !item.methodValidation>
             try {
-                error = getValidationProcessor("${validator.uniqueName}").getError(${item.accessor});
+                boolean skipCheck = false;
+                <#if item.hasValidateIf>
+                skipCheck = !${item.validateIf}();
+                </#if>
+                <#if item.hasValidateIfValue>
+                <#if item.numeric>
+                skipCheck = ((Number) ${item.accessor}) == null || ((Number) ${item.accessor}).doubleValue() == 0D;
+                <#elseif item.boolean>
+                skipCheck = ((${item.type}) ${item.accessor}) == null;
+                <#elseif item.string>
+                skipCheck = ${item.accessor} == null || ${item.accessor}.trim().isEmpty() || ${item.accessor}.equalsIgnoreCase("0");
                 <#else>
-                error = ${item.methodError};
+                skipCheck = ${item.accessor} == null;
+                </#if>
+                </#if>
+                error = skipCheck ? 0 : getValidationProcessor("${validator.uniqueName}").getError(${item.accessor});
                 </#if>
 
                 if (error != 0) {

@@ -59,7 +59,11 @@
     public void ${methodName}(<#if item.forceString>String<#elseif item.boolean>boolean<#else>${item.type}</#if> value) {
         <#if item.numeric && item.forceString>
         try {
-            ${item.accessor} = ${item.type}.valueOf(value);
+            if (value == null || value.isEmpty()) {
+                ${item.accessor} = ${item.type}.valueOf("0");
+            } else {
+                ${item.accessor} = ${item.type}.valueOf(value);
+            }
         } catch (NumberFormatException e) {
 
         }
