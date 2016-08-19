@@ -7,6 +7,7 @@ import com.dellkan.robobinding.helpers.validation.ValidateIfValue;
 import com.dellkan.robobinding.helpers.validation.validators.Validate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -96,6 +97,10 @@ public class ValidateDescriptor extends Descriptor {
         name = name.substring(0, 1).toLowerCase() + name.substring(1);
 
         dependencies.add(name);
+
+        if (validateIf != null && validateIf.dependsOn().length > 0) {
+            dependencies.addAll(Arrays.asList(validateIf.dependsOn()));
+        }
 
 
         if (isList) {
