@@ -40,8 +40,6 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
     private WebViewRunJavascriptAttribute mRunJavascriptAttribute;
     private WebViewSourceAttribute mSourceAttribute;
     private boolean mFinishedLoading = false;
-
-    // For onLoaded event - doesn't work currently
     private WebViewOnLoadedEvent mOnLoadedEvent;
 
     @Override
@@ -56,8 +54,6 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
         resolverMappings.map(propertyAttributeResolver(), "runJavascript");
         resolverMappings.map(staticResourceAttributeResolver(), "errorLayout");
 
-        // Add mapping for onLoaded event type - does not currently work
-        // FIXME: Not sure propertyAttributeResolver is/would be correct type for event attributes
         resolverMappings.map(new EventAttributeResolver(), "onLoaded");
     }
 
@@ -236,7 +232,7 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
         }
     }
 
-    // Attribute for onLoaded event - does not currently work, because GroupedAttribute does not support Event types
+    // Attribute for onLoaded event
     private class WebViewOnLoadedEvent implements EventViewAttribute<WebView, ViewAddOnForView> {
         private Command command;
         @Override
@@ -267,8 +263,6 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
     }
 
     static class EventAttributeResolver implements ChildAttributeResolver {
-        private PropertyAttributeParser propertyAttributeParser = new PropertyAttributeParser();
-
         @Override
         public AbstractAttribute resolveChildAttribute(String attribute, String attributeValue) {
             return new EventAttribute(attribute, attributeValue);
