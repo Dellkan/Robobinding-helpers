@@ -9,7 +9,10 @@ public class ListContainer<T> implements Serializable {
     private List<T> items = new ArrayList<>();
 
     public T getSelectedItem() {
-        return items.get(getSelectedPosition());
+        if (items.size() > 0 && getSelectedPosition() >= 0 && getSelectedPosition() < items.size()) {
+            return items.get(getSelectedPosition());
+        }
+        return null;
     }
 
     public void setSelectedItem(T selectedItem) {
