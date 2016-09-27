@@ -83,6 +83,10 @@ public class ValidateDescriptor extends Descriptor {
     }
 
     public String getValidateIf() {
+        String prefix = getPrefix();
+        if (prefix.length() > 0) {
+            return prefix.toLowerCase() + validateIf.value().substring(0, 1).toUpperCase() + validateIf.value().substring(1);
+        }
         return validateIf.value();
     }
 
@@ -99,7 +103,15 @@ public class ValidateDescriptor extends Descriptor {
         dependencies.add(name);
 
         if (validateIf != null && validateIf.dependsOn().length > 0) {
-            dependencies.addAll(Arrays.asList(validateIf.dependsOn()));
+            String prefix = getPrefix();
+
+            for (String dependency : validateIf.dependsOn()) {
+                if (prefix.length() > 1) {
+                    dependencies.add(prefix.substring(0, 1).toLowerCase() + prefix.substring(1) + dependency.substring(0, 1).toUpperCase() + dependency.substring(1));
+                } else {
+                    dependencies.add(dependency);
+                }
+            }
         }
 
 
