@@ -1,4 +1,4 @@
-package com.dellkan.robobinding.helpers.common.viewattributes;
+package com.dellkan.robobinding.helpers.common.viewattributes.View;
 
 import android.content.res.Resources;
 import android.graphics.Color;

@@ -1,4 +1,4 @@
-package com.dellkan.robobinding.helpers.common.viewattributes;
+package com.dellkan.robobinding.helpers.common.viewattributes.View;
 
 import android.view.View;
 
@@ -13,5 +13,6 @@ public class ViewExtensions extends CustomViewBinding<View> {
         super.mapBindingAttributes(mappings);
         mappings.mapOneWayMultiTypeProperty(ViewBackgroundAttribute.class, "background");
         mappings.mapOneWayMultiTypeProperty(ViewBackgroundColorAttribute.class, "backgroundColor");
+        mappings.mapOneWayProperty(ViewTransitionNameAttribute.class, "transitionName");
     }
 }

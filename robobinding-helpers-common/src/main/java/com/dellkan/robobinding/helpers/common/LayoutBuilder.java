@@ -16,7 +16,7 @@ import com.dellkan.robobinding.helpers.common.viewattributes.ImageView.ImageExte
 import com.dellkan.robobinding.helpers.common.viewattributes.SwipeRefreshLayout.SwipeRefreshLayoutExtensions;
 import com.dellkan.robobinding.helpers.common.viewattributes.TextInputLayout.TextInputLayoutExtensions;
 import com.dellkan.robobinding.helpers.common.viewattributes.TextView.TextViewExtensions;
-import com.dellkan.robobinding.helpers.common.viewattributes.ViewExtensions;
+import com.dellkan.robobinding.helpers.common.viewattributes.View.ViewExtensions;
 import com.dellkan.robobinding.helpers.common.viewattributes.WebView.WebViewExtensions;
 
 import org.robobinding.ViewBinder;

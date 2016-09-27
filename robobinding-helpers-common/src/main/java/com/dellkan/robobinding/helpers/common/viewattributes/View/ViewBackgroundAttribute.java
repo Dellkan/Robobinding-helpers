@@ -1,4 +1,4 @@
-package com.dellkan.robobinding.helpers.common.viewattributes;
+package com.dellkan.robobinding.helpers.common.viewattributes.View;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
