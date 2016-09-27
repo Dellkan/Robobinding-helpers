@@ -84,6 +84,10 @@ public class AddToDataDescriptor extends Descriptor {
     }
 
     public String getConditionalMethod() {
+        String prefix = getPrefix();
+        if (prefix.length() > 0) {
+            return prefix.toLowerCase() + annotation.onlyIf().substring(0, 1).toUpperCase() + annotation.onlyIf().substring(1);
+        }
         return annotation.onlyIf();
     }
 
