@@ -6,7 +6,7 @@ ext {
             groupId   : 'com.dellkan',
             name      : "Robobinding-helpers",
             website   : 'https://github.com/dellkan/robobinding-helpers',
-            version   : "0.5.3",
+            version   : "0.5.4-DEV",
 
             user      : properties.getProperty("bintray.user"),
             key       : properties.getProperty("bintray.apikey"),
