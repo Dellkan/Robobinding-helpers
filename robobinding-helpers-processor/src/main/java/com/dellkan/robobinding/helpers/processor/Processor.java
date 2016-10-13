@@ -1,6 +1,5 @@
 package com.dellkan.robobinding.helpers.processor;
 
-import com.dellkan.robobinding.helpers.model.ListContainer;
 import com.dellkan.robobinding.helpers.modelgen.AddToData;
 import com.dellkan.robobinding.helpers.modelgen.DependsOnStateOf;
 import com.dellkan.robobinding.helpers.modelgen.Get;
@@ -20,8 +19,6 @@ import com.dellkan.robobinding.helpers.processor.descriptors.MethodDescriptor;
 import com.dellkan.robobinding.helpers.processor.descriptors.ModelDescriptor;
 import com.dellkan.robobinding.helpers.processor.descriptors.SubValidateDescriptor;
 import com.dellkan.robobinding.helpers.processor.descriptors.ValidateDescriptor;
-import com.dellkan.robobinding.helpers.validation.ValidateIf;
-import com.dellkan.robobinding.helpers.validation.ValidateIfValue;
 import com.dellkan.robobinding.helpers.validation.ValidateType;
 import com.dellkan.robobinding.helpers.validation.ValidationProcessor;
 import com.dellkan.robobinding.helpers.validation.processors.ValidateBooleanProcessor;
@@ -90,6 +87,7 @@ public class Processor extends AbstractProcessor {
     private Configuration cfg = new Configuration(Configuration.VERSION_2_3_23);
     private Map<TypeElement, List<String>> customValidators = new HashMap<>();
     private Map<Element, ModelDescriptor> descriptors = new HashMap<>();
+    private static boolean globalLookupFileWritten = false;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -184,6 +182,8 @@ public class Processor extends AbstractProcessor {
                 continue;
             }
 
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, String.format("Generating %s", Util.elementToString(element) + "$$Helper"));
+
             descriptor.setWrittenToFile(true);
 
             Map<String, Object> input = new HashMap<>();
@@ -240,6 +240,38 @@ public class Processor extends AbstractProcessor {
                 e.printStackTrace();
             }
         }
+
+        if (!globalLookupFileWritten) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Creating global lookup file");
+            try {
+                // Write global lookup file
+                Map<String, Object> input = new HashMap<>();
+                input.put("models", descriptors);
+
+                // Create target file
+                JavaFileObject file = processingEnv.getFiler().createSourceFile("com.dellkan.robobinding.helpers.GlobalPresentationModelLookup");
+
+                // Get template
+                Template template = cfg.getTemplate("GlobalPresentationModelLookup.ftl");
+
+                Writer out = file.openWriter();
+
+                // Process template
+                template.process(input, out);
+
+                // Write
+                out.flush();
+                out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (TemplateException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            globalLookupFileWritten = true;
+        }
+
         return false;
     }
 

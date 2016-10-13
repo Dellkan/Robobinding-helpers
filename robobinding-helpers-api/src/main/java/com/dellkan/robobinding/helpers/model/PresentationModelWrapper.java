@@ -1,7 +1,5 @@
 package com.dellkan.robobinding.helpers.model;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -12,8 +10,25 @@ import java.util.UUID;
  */
 public abstract class PresentationModelWrapper implements IHasPresentationModel {
     private static Map<UUID, PresentationModelWrapper> ids = new HashMap<>();
+    private static IGlobalPresentationModelLookup lookupTable = null;
     private UUID id = UUID.randomUUID();
     private UUID parent = null;
+
+    private static IGlobalPresentationModelLookup getLookupTable() {
+        if (lookupTable == null) {
+            try {
+                Class cls = Class.forName("com.dellkan.robobinding.helpers.GlobalPresentationModelLookup");
+                lookupTable = (IGlobalPresentationModelLookup) cls.newInstance();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return lookupTable;
+    }
 
     @Override
     public UUID getUniquePresentationModelID() {
@@ -38,20 +53,8 @@ public abstract class PresentationModelWrapper implements IHasPresentationModel 
     private void initializePresentationModel() {
         if (presentationModel == null) {
             ids.put(this.id, this);
-            Class<?> clazz;
-            try {
-                clazz = Class.forName(this.getClass().getName() + "$$Helper");
-                Constructor<?> constructor = clazz.getConstructor(this.getClass());
-                presentationModel = ((IHasPresentationModel) constructor.newInstance(this));
-            } catch (ClassNotFoundException e) {
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
+            if (getLookupTable() != null) {
+                presentationModel = getLookupTable().getPresentationModel(this);
             }
         }
     }

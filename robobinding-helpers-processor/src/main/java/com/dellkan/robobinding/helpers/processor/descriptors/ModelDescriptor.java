@@ -1,5 +1,9 @@
 package com.dellkan.robobinding.helpers.processor.descriptors;
 
+import com.dellkan.robobinding.helpers.modelgen.ItemPresentationModel;
+import com.dellkan.robobinding.helpers.modelgen.PresentationModel;
+import com.dellkan.robobinding.helpers.processor.Util;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -44,6 +48,18 @@ public class ModelDescriptor {
 
     public void setModel(Element model) {
         this.model = model;
+    }
+
+    public String getType() {
+        return Util.typeToString(model.asType());
+    }
+
+    public boolean isPresentationModel() {
+        return model.getAnnotation(PresentationModel.class) != null;
+    }
+
+    public boolean isItemPresentationModel() {
+        return model.getAnnotation(ItemPresentationModel.class) != null;
     }
 
     public List<MethodDescriptor> getMethods() {

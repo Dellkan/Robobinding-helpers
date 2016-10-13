@@ -9,6 +9,7 @@ import org.robobinding.presentationmodel.PresentationModelChangeSupport;
 import org.robobinding.widget.adapterview.ItemClickEvent;
 
 import com.dellkan.robobinding.helpers.model.IHasPresentationModel;
+import com.dellkan.robobinding.helpers.model.PresentationModelWrapper;
 import com.dellkan.robobinding.helpers.validation.ValidationProcessor;
 
 import java.lang.annotation.Annotation;
@@ -23,6 +24,14 @@ public class ${className}$$Helper implements HasPresentationModelChangeSupport, 
     private final PresentationModelChangeSupport changeHandler;
     public ${className}$$Helper(${className} data) {
         this.data = data;
+        this.changeHandler = new PresentationModelChangeSupport(this);
+        <#list descriptor.includeItems as includeModel>
+            ${includeModel.accessor}.setParentPresentationModel(this.data);
+        </#list>
+    }
+
+    public ${className}$$Helper(PresentationModelWrapper data) {
+        this.data = (${className})data;
         this.changeHandler = new PresentationModelChangeSupport(this);
         <#list descriptor.includeItems as includeModel>
             ${includeModel.accessor}.setParentPresentationModel(this.data);
@@ -52,6 +61,8 @@ public class ${className}$$Helper implements HasPresentationModelChangeSupport, 
         <#include "/ListItems.ftl">
     </#list>
 
+    // Data
+    <#include "/Data.ftl">
 
     // Utilities
     public void refresh() {
@@ -79,6 +90,7 @@ public class ${className}$$Helper implements HasPresentationModelChangeSupport, 
         this.data.setParentPresentationModel(parent);
     }
 
-    // Data
-    <#include "/Data.ftl">
+    public static Class<? extends IHasPresentationModel> getModelClass() {
+        return ${className}.class;
+    }
 }
