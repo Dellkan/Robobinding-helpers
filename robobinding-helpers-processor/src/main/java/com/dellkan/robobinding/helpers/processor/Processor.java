@@ -362,7 +362,7 @@ public class Processor extends AbstractProcessor {
     }
 
     private void traverseChildren(ModelDescriptor descriptor) {
-        for (Element child : descriptor.getModel().getEnclosedElements()) {
+        for (Element child : processingEnv.getElementUtils().getAllMembers((TypeElement) descriptor.getModel())) {
 
             ValidateDescriptor validationDescriptor = null;
 
@@ -403,7 +403,7 @@ public class Processor extends AbstractProcessor {
 
                 if (child.getAnnotation(PresentationMethod.class) == null && child.getAnnotation(DependsOnStateOf.class) == null) {
                     if (!child.getModifiers().contains(Modifier.PRIVATE)) {
-                        messager.printMessage(Diagnostic.Kind.WARNING, "Skipping unannotated method " + child.getSimpleName(), child);
+                        // messager.printMessage(Diagnostic.Kind.WARNING, "Skipping unannotated method " + child.getSimpleName(), child);
                     }
                     continue;
                 }

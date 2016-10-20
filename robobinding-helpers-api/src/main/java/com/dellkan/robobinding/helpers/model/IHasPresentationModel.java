@@ -34,10 +34,4 @@ public interface IHasPresentationModel extends IHasValidation {
      * @return map of data
      */
     public Map<String, Object> getData(String group);
-
-    public UUID getUniquePresentationModelID();
-
-    public void setParentPresentationModel(IHasPresentationModel parent);
-
-    public IHasPresentationModel getParentPresentationModel();
 }

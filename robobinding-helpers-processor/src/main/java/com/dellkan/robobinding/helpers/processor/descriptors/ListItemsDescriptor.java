@@ -13,4 +13,8 @@ public class ListItemsDescriptor extends Descriptor {
     public String getType() {
         return Util.typeToString(((DeclaredType) getField().asType()).getTypeArguments().get(0));
     }
+
+    public String getSimpleType() {
+        return Util.rawTypeToString(((DeclaredType) getField().asType()).getTypeArguments().get(0), '$');
+    }
 }

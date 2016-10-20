@@ -1,6 +1,7 @@
 package com.dellkan.robobinding.helpers.model;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -9,10 +10,12 @@ import java.util.UUID;
  * so it will get all these helpers methods.
  */
 public abstract class PresentationModelWrapper implements IHasPresentationModel {
-    private static Map<UUID, PresentationModelWrapper> ids = new HashMap<>();
     private static IGlobalPresentationModelLookup lookupTable = null;
-    private UUID id = UUID.randomUUID();
-    private UUID parent = null;
+    private Map<PresentationModelWrapper, String> attachedModels = new HashMap<>();
+
+    public void attachModel(PresentationModelWrapper model, String prefix) {
+        attachedModels.put(model, prefix);
+    }
 
     private static IGlobalPresentationModelLookup getLookupTable() {
         if (lookupTable == null) {
@@ -30,21 +33,6 @@ public abstract class PresentationModelWrapper implements IHasPresentationModel 
         return lookupTable;
     }
 
-    @Override
-    public UUID getUniquePresentationModelID() {
-        return id;
-    }
-
-    @Override
-    public IHasPresentationModel getParentPresentationModel() {
-        return ids.get(parent);
-    }
-
-    @Override
-    public void setParentPresentationModel(IHasPresentationModel parent) {
-        this.parent = parent.getUniquePresentationModelID();
-    }
-
     /**
      * A reference to the generated class
      */
@@ -52,7 +40,6 @@ public abstract class PresentationModelWrapper implements IHasPresentationModel 
 
     private void initializePresentationModel() {
         if (presentationModel == null) {
-            ids.put(this.id, this);
             if (getLookupTable() != null) {
                 presentationModel = getLookupTable().getPresentationModel(this);
             }
@@ -71,11 +58,27 @@ public abstract class PresentationModelWrapper implements IHasPresentationModel 
     @Override
     public void refresh() {
         getPresentationModel().refresh();
+        // Also refresh all attached models
+        for (Map.Entry<PresentationModelWrapper, String> entry : attachedModels.entrySet()) {
+            entry.getKey().refresh();
+        }
     }
 
     @Override
     public void refresh(String... field) {
         getPresentationModel().refresh(field);
+        // Also refresh all attached models. Some trickery necessary due to prefixes and capitalizations
+        for (Map.Entry<PresentationModelWrapper, String> entry : attachedModels.entrySet()) {
+            String[] fields = new String[field.length];
+            for (int i = 0; i < field.length; i++) {
+                if (!entry.getValue().isEmpty() && !field[i].startsWith(entry.getValue())) {
+                    fields[i] = entry.getValue() + field[i].substring(0, 1).toUpperCase() + field[i].substring(1);
+                } else {
+                    fields[i] = field[i];
+                }
+            }
+            entry.getKey().refresh(fields);
+        }
     }
 
     @Override

@@ -60,21 +60,6 @@ public class ${className}$$ItemHelper implements IHasPresentationModel, ItemPres
         }
     }
 
-    @Override
-    public UUID getUniquePresentationModelID() {
-        return this.data.getUniquePresentationModelID();
-    }
-
-    @Override
-    public IHasPresentationModel getParentPresentationModel() {
-        return this.data.getParentPresentationModel();
-    }
-
-    @Override
-    public void setParentPresentationModel(IHasPresentationModel parent) {
-        this.data.setParentPresentationModel(parent);
-    }
-
     // Data
     <#include "/Data.ftl">
 }

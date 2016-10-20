@@ -1,5 +1,5 @@
 
-    @org.robobinding.annotation.ItemPresentationModel(${item.type}$$ItemHelper.class)
+    @org.robobinding.annotation.ItemPresentationModel(${item.simpleType}$$ItemHelper.class)
     public List<${item.type}> get${item.name}() {
         return ${item.accessor}.getItems();
     }

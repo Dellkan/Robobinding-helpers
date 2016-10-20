@@ -15,6 +15,8 @@ public class TextViewTextAttribute implements OneWayMultiTypePropertyViewAttribu
             return new CharSequenceTextAttribute();
         } else if (String.class.isAssignableFrom(propertyType)) {
             return new StringTextAttribute();
+        } else if (Enum.class.isAssignableFrom(propertyType)) {
+
         }
 
         return null;
@@ -42,6 +44,13 @@ public class TextViewTextAttribute implements OneWayMultiTypePropertyViewAttribu
         @Override
         public void updateView(TextView view, String newValue) {
             view.setText(newValue);
+        }
+    }
+
+    static class EnumAttribute implements OneWayPropertyViewAttribute<TextView, Enum> {
+        @Override
+        public void updateView(TextView textView, Enum anEnum) {
+            textView.setText(anEnum.name());
         }
     }
 }

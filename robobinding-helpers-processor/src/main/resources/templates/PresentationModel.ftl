@@ -26,7 +26,7 @@ public class ${className}$$Helper implements HasPresentationModelChangeSupport, 
         this.data = data;
         this.changeHandler = new PresentationModelChangeSupport(this);
         <#list descriptor.includeItems as includeModel>
-            ${includeModel.accessor}.setParentPresentationModel(this.data);
+            ${includeModel.accessor}.attachModel(this.data, "${includeModel.prefix}");
         </#list>
     }
 
@@ -34,7 +34,7 @@ public class ${className}$$Helper implements HasPresentationModelChangeSupport, 
         this.data = (${className})data;
         this.changeHandler = new PresentationModelChangeSupport(this);
         <#list descriptor.includeItems as includeModel>
-            ${includeModel.accessor}.setParentPresentationModel(this.data);
+            ${includeModel.accessor}.attachModel(this.data, "${includeModel.prefix}");
         </#list>
     }
 
@@ -73,21 +73,6 @@ public class ${className}$$Helper implements HasPresentationModelChangeSupport, 
         for (String field : fields) {
             this.changeHandler.firePropertyChange(field);
         }
-    }
-
-    @Override
-    public UUID getUniquePresentationModelID() {
-        return this.data.getUniquePresentationModelID();
-    }
-
-    @Override
-    public IHasPresentationModel getParentPresentationModel() {
-        return this.data.getParentPresentationModel();
-    }
-
-    @Override
-    public void setParentPresentationModel(IHasPresentationModel parent) {
-        this.data.setParentPresentationModel(parent);
     }
 
     public static Class<? extends IHasPresentationModel> getModelClass() {
