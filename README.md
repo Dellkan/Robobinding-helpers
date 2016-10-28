@@ -34,9 +34,18 @@ This library, and Robobinding both requires https://bitbucket.org/hvisser/androi
     dependencies {
       ....
       compile 'com.dellkan:robobinding-helpers-api:0.3.0'
-  	  apt 'com.dellkan:robobinding-helpers-processor:0.3.0'
+      apt 'com.dellkan:robobinding-helpers-processor:0.3.0'
   	  ....
     }
+
+Optionally, you may add the common library, which adds a bunch of common viewbindings, as well as a LayoutInflaterBuilder
+    
+    dependencies {
+      ....
+      compile 'com.dellkan:robobinding-helpers-common:0.3.0'
+      ....
+    }
+
 
 # Issues
 https://github.com/Dellkan/Robobinding-helpers/issues
