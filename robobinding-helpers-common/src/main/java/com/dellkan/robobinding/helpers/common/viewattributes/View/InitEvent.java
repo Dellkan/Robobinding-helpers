@@ -1,4 +1,4 @@
-package com.dellkan.robobinding.helpers.common.viewattributes.WebView;
+package com.dellkan.robobinding.helpers.common.viewattributes.View;
 
 import android.view.View;
 

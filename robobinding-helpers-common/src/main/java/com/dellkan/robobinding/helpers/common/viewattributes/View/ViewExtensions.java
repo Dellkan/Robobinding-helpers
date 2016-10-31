@@ -14,5 +14,7 @@ public class ViewExtensions extends CustomViewBinding<View> {
         mappings.mapOneWayMultiTypeProperty(ViewBackgroundAttribute.class, "background");
         mappings.mapOneWayMultiTypeProperty(ViewBackgroundColorAttribute.class, "backgroundColor");
         mappings.mapOneWayProperty(ViewTransitionNameAttribute.class, "transitionName");
+
+        mappings.mapEvent(ViewInitAttribute.class, "onInit");
     }
 }
