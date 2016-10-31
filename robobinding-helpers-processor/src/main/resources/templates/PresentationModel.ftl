@@ -20,9 +20,9 @@ import java.util.UUID;
 
 @PresentationModel
 public class ${className}$$Helper implements HasPresentationModelChangeSupport, IHasPresentationModel {
-    private ${className} data;
+    private ${qualifiedClassName} data;
     private final PresentationModelChangeSupport changeHandler;
-    public ${className}$$Helper(${className} data) {
+    public ${className}$$Helper(${qualifiedClassName} data) {
         this.data = data;
         this.changeHandler = new PresentationModelChangeSupport(this);
         <#list descriptor.includeItems as includeModel>
@@ -31,7 +31,7 @@ public class ${className}$$Helper implements HasPresentationModelChangeSupport, 
     }
 
     public ${className}$$Helper(PresentationModelWrapper data) {
-        this.data = (${className})data;
+        this.data = (${qualifiedClassName})data;
         this.changeHandler = new PresentationModelChangeSupport(this);
         <#list descriptor.includeItems as includeModel>
             ${includeModel.accessor}.attachModel(this.data, "${includeModel.prefix}");

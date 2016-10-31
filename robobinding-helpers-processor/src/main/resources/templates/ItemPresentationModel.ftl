@@ -19,15 +19,15 @@ import java.util.Map;
 import java.util.UUID;
 
 @PresentationModel
-public class ${className}$$ItemHelper implements IHasPresentationModel, ItemPresentationModel<${className}> {
-    private ${className} data;
+public class ${className}$$ItemHelper implements IHasPresentationModel, ItemPresentationModel<${qualifiedClassName}> {
+    private ${qualifiedClassName} data;
     private final PresentationModelChangeSupport changeHandler;
     public ${className}$$ItemHelper() {
         this.changeHandler = new PresentationModelChangeSupport(this);
     }
 
     @Override
-    public void updateData(${className} data, ItemContext itemContext) {
+    public void updateData(${qualifiedClassName} data, ItemContext itemContext) {
         this.data = data;
     }
 

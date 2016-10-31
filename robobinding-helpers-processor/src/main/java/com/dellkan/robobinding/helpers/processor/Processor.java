@@ -195,7 +195,9 @@ public class Processor extends AbstractProcessor {
             input.put("descriptor", descriptor);
 
             // Fill in variables
-            input.put("className", element.getSimpleName());
+            String rawType = Util.rawTypeToString(element.asType(), '$');
+            input.put("className", rawType.substring((Util.getPackage(element).toString() + ".").length()));
+            input.put("qualifiedClassName", Util.rawTypeToString(element.asType(), '.'));
             input.put("packageName", Util.getPackage(element));
 
             try {
@@ -205,9 +207,22 @@ public class Processor extends AbstractProcessor {
                 // Get template
                 Template template = null;
 
+//                processingEnv.getMessager().printMessage(
+//                        Diagnostic.Kind.NOTE,
+//                        String.format("\nSimplename: %s \nrawTypeToString: %s\nrawTypeWithoutPackage: %s\nQualifiedName: %s \nSuperClass: %s \nisNested: %b \nNestingKind: %s",
+//                                typeElement.getSimpleName(),
+//                                Util.rawTypeToString(element.asType(), '$'),
+//                                Util.rawTypeToString(element.asType(), '$').substring((Util.getPackage(element).toString() + ".").length()),
+//                                typeElement.getQualifiedName(),
+//                                Util.typeToString(typeElement.getSuperclass()),
+//                                typeElement.getNestingKind().isNested(),
+//                                typeElement.getNestingKind().name()
+//                        )
+//                );
+
                 if (element.getAnnotation(PresentationModel.class) != null) {
                     template = cfg.getTemplate("PresentationModel.ftl");
-                    file = processingEnv.getFiler().createSourceFile(Util.elementToString(element) + "$$Helper");
+                    file = processingEnv.getFiler().createSourceFile(rawType + "$$Helper");
 
                     Writer out = file.openWriter();
 
@@ -221,7 +236,7 @@ public class Processor extends AbstractProcessor {
 
                 if (element.getAnnotation(ItemPresentationModel.class) != null) {
                     template = cfg.getTemplate("ItemPresentationModel.ftl");
-                    file = processingEnv.getFiler().createSourceFile(Util.elementToString(element) + "$$ItemHelper");
+                    file = processingEnv.getFiler().createSourceFile(rawType + "$$ItemHelper");
 
                     Writer out = file.openWriter();
 
