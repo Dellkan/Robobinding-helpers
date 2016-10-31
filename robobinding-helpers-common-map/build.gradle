@@ -1,0 +1,59 @@
+apply plugin: 'com.android.library'
+apply plugin: 'com.neenbedankt.android-apt'
+apply plugin: 'com.novoda.bintray-release'
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "25.0.0"
+
+    defaultConfig {
+        minSdkVersion 9
+        targetSdkVersion 24
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+repositories {
+    jcenter()
+    maven() {
+        name 'SonaType snapshot repository'
+        url 'https://oss.sonatype.org/content/repositories/snapshots'
+    }
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    compile('org.robobinding:robobinding:0.8.15-SNAPSHOT:with-aop-and-dependencies')
+    apt "org.robobinding:codegen:0.8.15-SNAPSHOT"
+
+    compile 'com.google.android.gms:play-services-maps:9.8.0'
+    compile project(path: ':robobinding-helpers-common')
+}
+
+publish {
+    def metadata = project.rootProject.ext.metadata
+
+    groupId = metadata.groupId
+    uploadName = metadata.name
+    website = metadata.website
+
+    publishVersion = metadata.version
+    dryRun = metadata.dryRun
+
+    bintrayUser = metadata.user
+    bintrayKey = metadata.key
+
+    artifactId = 'robobinding-helpers-common-map'
+    desc = 'Bindings for google maps'
+}
