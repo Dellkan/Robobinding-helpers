@@ -8,13 +8,11 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.dellkan.robobinding.helpers.common.EventAttributeResolver;
+
 import org.robobinding.BindingContext;
-import org.robobinding.attribute.AbstractAttribute;
-import org.robobinding.attribute.ChildAttributeResolver;
 import org.robobinding.attribute.ChildAttributeResolverMappings;
 import org.robobinding.attribute.Command;
-import org.robobinding.attribute.EventAttribute;
-import org.robobinding.attribute.PropertyAttributeParser;
 import org.robobinding.attribute.ResolvedGroupAttributes;
 import org.robobinding.attribute.StaticResourceAttribute;
 import org.robobinding.attribute.ValueModelAttribute;
@@ -260,13 +258,5 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
                 return url;
             }
         }
-    }
-
-    static class EventAttributeResolver implements ChildAttributeResolver {
-        @Override
-        public AbstractAttribute resolveChildAttribute(String attribute, String attributeValue) {
-            return new EventAttribute(attribute, attributeValue);
-        }
-
     }
 }
