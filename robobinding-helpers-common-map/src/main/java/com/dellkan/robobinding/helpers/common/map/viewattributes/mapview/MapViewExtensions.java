@@ -10,6 +10,6 @@ import org.robobinding.viewbinding.BindingAttributeMappings;
 public class MapViewExtensions extends CustomViewBinding<MapView> {
 	@Override
 	public void mapBindingAttributes(BindingAttributeMappings<MapView> mappings) {
-		mappings.mapGroupedAttribute(MapViewAttributes.class, "onMapLoaded");
+		mappings.mapGroupedAttribute(MapViewAttributes.class, "onMapLoaded", "onMapClicked", "markers", "circles");
 	}
 }
