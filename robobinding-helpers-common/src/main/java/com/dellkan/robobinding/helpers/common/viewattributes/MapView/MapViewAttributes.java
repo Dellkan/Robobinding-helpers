@@ -1,4 +1,4 @@
-package com.dellkan.robobinding.helpers.common.map.viewattributes.mapview;
+package com.dellkan.robobinding.helpers.common.viewattributes.MapView;
 
 import com.dellkan.robobinding.helpers.common.EventAttributeResolver;
 import com.google.android.gms.maps.GoogleMap;

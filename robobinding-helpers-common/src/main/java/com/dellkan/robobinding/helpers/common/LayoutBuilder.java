@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.dellkan.robobinding.helpers.common.viewattributes.AdapterView.AdapterViewExtensions;
 import com.dellkan.robobinding.helpers.common.viewattributes.EditText.EditTextExtensions;
 import com.dellkan.robobinding.helpers.common.viewattributes.ImageView.ImageExtensions;
+import com.dellkan.robobinding.helpers.common.viewattributes.MapView.MapViewExtensions;
 import com.dellkan.robobinding.helpers.common.viewattributes.SwipeRefreshLayout.SwipeRefreshLayoutExtensions;
 import com.dellkan.robobinding.helpers.common.viewattributes.TextInputLayout.TextInputLayoutExtensions;
 import com.dellkan.robobinding.helpers.common.viewattributes.TextView.TextViewExtensions;
@@ -35,10 +36,23 @@ public final class LayoutBuilder {
         binderFactoryBuilder.add(new SwipeRefreshLayoutExtensions().forView(SwipeRefreshLayout.class));
         binderFactoryBuilder.add(new AdapterViewExtensions().extend(AdapterView.class));
 
+        if (classExists("com.google.android.gms.maps.MapView")) {
+            binderFactoryBuilder.add(new MapViewExtensions().forView(com.google.android.gms.maps.MapView.class));
+        }
+
         return binderFactoryBuilder;
     }
 
     public static ViewBinder getViewBinder(Context context) {
         return getBinderBuilder().build().createViewBinder(context);
+    }
+
+    private static boolean classExists(String fullyQualifiedName) {
+        try {
+            Class.forName(fullyQualifiedName);
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 }
