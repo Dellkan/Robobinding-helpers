@@ -1,6 +1,5 @@
 apply plugin: 'java'
 apply plugin: 'com.novoda.bintray-release'
-apply plugin: 'nebula.provided-base'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -10,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    provided 'org.json:json:20160810'
+    compile 'org.json:json:20160810'
 }
 
 publish {
