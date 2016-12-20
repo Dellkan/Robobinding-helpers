@@ -1,9 +1,12 @@
 package com.dellkan.robobinding.helpers.common.viewattributes.WebView;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.view.View;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -39,6 +42,7 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
     private WebViewSourceAttribute mSourceAttribute;
     private boolean mFinishedLoading = false;
     private WebViewOnLoadedEvent mOnLoadedEvent;
+    private WebViewOnShouldOverrideUrlHandlingEvent mOnShouldOverrideUrlHandling;
 
     @Override
     public String[] getCompulsoryAttributes() {
@@ -53,6 +57,8 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
         resolverMappings.map(staticResourceAttributeResolver(), "errorLayout");
 
         resolverMappings.map(new EventAttributeResolver(), "onLoaded");
+        resolverMappings.map(new EventAttributeResolver(), "onShouldOverrideUrlHandling");
+
     }
 
     @Override
@@ -78,6 +84,11 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
         // Onloaded event
         if (childViewAttributesBuilder.hasAttribute("onLoaded")) {
             childViewAttributesBuilder.add("onLoaded", mOnLoadedEvent = new WebViewOnLoadedEvent());
+        }
+
+        // OnShouldOverrideUrlHandling event Whew... Sorry about the naming
+        if (childViewAttributesBuilder.hasAttribute("onShouldOverrideUrlHandling")) {
+            childViewAttributesBuilder.add("onShouldOverrideUrlHandling", mOnShouldOverrideUrlHandling = new WebViewOnShouldOverrideUrlHandlingEvent());
         }
     }
 
@@ -121,7 +132,19 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
             }
 
             @Override
+            @RequiresApi(Build.VERSION_CODES.N)
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                if (mOnShouldOverrideUrlHandling != null) {
+                    return mOnShouldOverrideUrlHandling.triggerEvent(view, request.getUrl().toString());
+                }
+                return false;
+            }
+
+            @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                if (mOnShouldOverrideUrlHandling != null) {
+                    return mOnShouldOverrideUrlHandling.triggerEvent(view, url);
+                }
                 return false;
             }
         });
@@ -250,6 +273,36 @@ public class WebViewAttributes implements GroupedViewAttribute<WebView> {
         public class OnLoadedEvent extends AbstractViewEvent {
             private String url;
             protected OnLoadedEvent(View view, String url) {
+                super(view);
+                this.url = url;
+            }
+
+            public String getUrl() {
+                return url;
+            }
+        }
+    }
+
+    // Attribute for onLoaded event
+    public class WebViewOnShouldOverrideUrlHandlingEvent implements EventViewAttribute<WebView, ViewAddOnForView> {
+        private Command command;
+        @Override
+        public void bind(ViewAddOnForView viewAddOnForView, Command command, WebView webView) {
+            this.command = command;
+        }
+
+        public boolean triggerEvent(WebView webView, String url) {
+            return (boolean) this.command.invoke(new OnShouldOverrideUrlHandlingEvent(webView, url));
+        }
+
+        @Override
+        public Class<?> getEventType() {
+            return OnShouldOverrideUrlHandlingEvent.class;
+        }
+
+        public class OnShouldOverrideUrlHandlingEvent extends AbstractViewEvent {
+            private String url;
+            protected OnShouldOverrideUrlHandlingEvent(View view, String url) {
                 super(view);
                 this.url = url;
             }
