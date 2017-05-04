@@ -1,5 +1,8 @@
 package com.dellkan.robobinding.helpers.common.viewattributes.TextView;
 
+import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
+import android.text.style.URLSpan;
 import android.widget.TextView;
 
 import org.robobinding.util.PrimitiveTypeUtils;
@@ -16,7 +19,9 @@ public class TextViewTextAttribute implements OneWayMultiTypePropertyViewAttribu
         } else if (String.class.isAssignableFrom(propertyType)) {
             return new StringTextAttribute();
         } else if (Enum.class.isAssignableFrom(propertyType)) {
-
+            return new EnumAttribute();
+        } else if (Spanned.class.isAssignableFrom(propertyType)) {
+            return new SpannedAttribute();
         }
 
         return null;
@@ -51,6 +56,17 @@ public class TextViewTextAttribute implements OneWayMultiTypePropertyViewAttribu
         @Override
         public void updateView(TextView textView, Enum anEnum) {
             textView.setText(anEnum.name());
+        }
+    }
+
+    static class SpannedAttribute implements OneWayPropertyViewAttribute<TextView, Spanned> {
+        @Override
+        public void updateView(TextView textView, Spanned value) {
+            if (value.getSpans(0, value.length(), URLSpan.class).length > 0) {
+                textView.setLinksClickable(true);
+                textView.setMovementMethod(LinkMovementMethod.getInstance());
+            }
+            textView.setText(value);
         }
     }
 }
