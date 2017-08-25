@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    compile 'org.json:json:20160810'
+    compile 'org.json:json:20170516'
 }
 
 publish {

@@ -49,8 +49,9 @@ public class ViewBackgroundColorAttribute implements OneWayMultiTypePropertyView
                 }
             } catch (Resources.NotFoundException e) {}
 
-            GradientDrawable background = (GradientDrawable) view.getBackground();
-            background.setColor(color);
+            view.setBackgroundColor(color);
+//            GradientDrawable background = (GradientDrawable) view.getBackground();
+//            background.setColor(color);
         }
     }
 }

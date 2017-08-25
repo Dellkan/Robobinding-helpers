@@ -15,7 +15,7 @@ dependencies {
     compile project(":robobinding-helpers-api")
     compile 'org.freemarker:freemarker:2.3.25-incubating'
     compile 'com.squareup:javapoet:1.2.0'
-    compile 'org.json:json:20160810'
+    compile 'org.json:json:20170516'
 }
 
 publish {
